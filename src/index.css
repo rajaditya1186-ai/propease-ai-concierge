@@ -23,11 +23,86 @@
   background: #C5A059;
 }
 
+/* Hide scrollbar utility (keep scroll functionality) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ── Pulse glow (existing) ─────────────────────────────── */
 @keyframes pulseGlow {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.5; transform: scale(1.15); }
 }
-
 .animate-pulse-glow {
   animation: pulseGlow 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ── Chat message entrance ─────────────────────────────── */
+@keyframes msgSlideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-msg-in {
+  animation: msgSlideIn 0.28s ease-out both;
+}
+
+/* ── KPI counter shimmer / count-up base ───────────────── */
+@keyframes kpiReveal {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-kpi-reveal {
+  animation: kpiReveal 0.45s ease-out both;
+}
+
+/* ── Booking passcard shimmer sweep ────────────────────── */
+@keyframes shimmerSweep {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(197,160,89,0.18) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmerSweep 2.4s ease-in-out infinite;
+}
+
+/* ── Passcard slide-in entrance ────────────────────────── */
+@keyframes passcardSlideIn {
+  from { opacity: 0; transform: translateY(-18px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-passcard-in {
+  animation: passcardSlideIn 0.38s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+/* ── Luxury micro-interaction: card lift ───────────────── */
+.card-hover {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(17,20,24,0.10);
+}
+
+/* ── Bronze glow for active/selected states ────────────── */
+.bronze-glow {
+  box-shadow: 0 0 0 2px rgba(197,160,89,0.35), 0 4px 16px rgba(197,160,89,0.12);
+}
+
+/* ── Progress bar fill animation ───────────────────────── */
+@keyframes fillBar {
+  from { width: 0%; }
+  to   { width: var(--bar-width); }
+}
+.animate-fill-bar {
+  animation: fillBar 0.9s cubic-bezier(0.22,1,0.36,1) both;
 }

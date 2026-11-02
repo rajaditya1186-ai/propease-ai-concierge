@@ -163,7 +163,7 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
           return (
             <div
               key={msg.id}
-              className={`flex items-end gap-2.5 ${isUser ? 'justify-end' : 'justify-start'}`}
+              className={`flex items-end gap-2.5 animate-msg-in ${isUser ? 'justify-end' : 'justify-start'}`}
             >
               {!isUser && (
                 <div className="w-8 h-8 rounded-full bg-[#111418] text-[#C5A059] flex items-center justify-center shrink-0 mb-1 font-bold text-xs shadow-xs">
@@ -306,7 +306,7 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
           disabled={!inputQuery.trim() || isTyping}
           className={`p-2.5 rounded-xl font-bold transition-all shadow-xs ${
             inputQuery.trim() && !isTyping
-              ? 'bg-[#111418] hover:bg-[#2A3038] text-[#C5A059]'
+              ? 'bg-[#111418] hover:bg-[#2A3038] text-[#C5A059] hover:scale-105 active:scale-95'
               : 'bg-gray-100 text-gray-400 cursor-not-allowed'
           }`}
         >
