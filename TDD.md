@@ -146,11 +146,13 @@ export interface ToolEscalateToHuman {
 ---
 
 ### 6. Test Suite & Verification Matrix
-* **Unit Tests**:
-  * `concurrencyLock.test.ts`: Race-condition simulation testing 5 concurrent requests against 1 remaining slot $\rightarrow$ verifies 1 success and 4 handled rejections.
-  * `deduplication.test.ts`: Phone number normalization (`+91`, leading zeros, dashes) and cross-channel merge integrity.
-  * `aiBoundaries.test.ts`: Verification of discount interception and fact-sheet boundary triggers.
-* **Manual Verification Checklist**:
+* **Regression Test Suite (`tests/runVerification.mjs` / `npm test`)**:
+  * **Concurrency Lock Mutex**: Race-condition simulation testing parallel requests against 1 remaining slot $\rightarrow$ verifies 1 success and handled rejection on capacity exhaustion (`DOUBLE_BOOKING_PREVENTED`).
+  * **Phone Normalization & Deduplication**: Tests 10-digit, 0-prefixed, space/dash formatted, and `+91` E.164 phone normalization, plus cross-channel lead matching.
+  * **AI Boundaries & Anti-Negotiation**: Verification of discount interception (English & Gujarati) and unlisted inquiry deferral with automatic audit flagging.
+  * **Ground Truth Seeds**: Verifies presence of mandatory seeds (`LD-58210: Hardik Patel`, `LD-58211: Nidhi Shah`, `LD-58224: Kavita Joshi`).
+* **Manual & Visual Verification Matrix**:
+  * Interactive race condition stress tester (`ConcurrencyStressTestModal.tsx`).
   * End-to-end booking flow from chat $\rightarrow$ slot selection $\rightarrow$ executive handoff $\rightarrow$ dashboard KPI update.
   * Multilingual verification across English, Hindi, and Gujarati.
   * GujRERA and DPDP Act 2023 compliance notices.

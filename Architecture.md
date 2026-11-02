@@ -112,39 +112,29 @@ IsoCode_Workspace/
 │   │   └── reminderScheduler.ts           # 24h & 2h reminder simulator with WhatsApp template
 │   ├── components/
 │   │   ├── layout/
-│   │   │   ├── Header.tsx                 # Navigation, active role switcher, SLA indicator
-│   │   │   ├── Sidebar.tsx                # Role-specific navigation tabs
-│   │   │   └── ComplianceBanner.tsx       # RERA disclaimer & DPDP consent badge
+│   │   │   ├── Header.tsx                 # Navigation, view switcher (Buyer, Sales, Admin, Dashboard), SLA indicator
+│   │   │   └── ComplianceBanner.tsx       # GujRERA disclaimer & DPDP consent badge
 │   │   ├── buyer/
-│   │   │   ├── BuyerChatWidget.tsx        # Multilingual conversational interface
-│   │   │   ├── LanguageSelector.tsx       # English / Hindi / Gujarati picker
-│   │   │   ├── QuickOptionChips.tsx       # 2 BHK, 3 BHK, Pricing, Schedule Site Visit
-│   │   │   ├── SlotPickerModal.tsx        # Interactive calendar slot selection
-│   │   │   └── BookingPasscard.tsx        # Confirmation card with Maps pin & .ics download
+│   │   │   ├── BuyerChatWidget.tsx        # Multilingual chat interface with language selector & quick requirement chips
+│   │   │   ├── SlotPickerModal.tsx        # Interactive calendar slot selection with concurrency hold timer
+│   │   │   └── BookingPasscard.tsx        # Boarding-pass confirmation card with Maps pin & .ics download
 │   │   ├── sales/
-│   │   │   ├── ExecutiveWorkspace.tsx     # Queue for 11 named executives
-│   │   │   ├── HandoverDossier.tsx        # AI summary, extracted budget, full transcript
-│   │   │   ├── VisitStatusController.tsx  # Mark Visited, No-Show, Reschedule
-│   │   │   └── WhatsAppSimulatorModal.tsx # Simulated WhatsApp thread with RERA templates
+│   │   │   ├── ExecutiveWorkspace.tsx     # Queue for 11 named executives with calendar schedule
+│   │   │   ├── HandoverDossier.tsx        # AI summary, extracted budget, full transcript & visit status controller
+│   │   │   └── WhatsAppSimulatorModal.tsx # Simulated WhatsApp thread with RERA templates & DPDP STOP opt-out
 │   │   ├── admin/
-│   │   │   ├── UnifiedLeadList.tsx        # All leads, duplicate badge, merge modal, filters
+│   │   │   ├── UnifiedLeadList.tsx        # All leads, duplicate badge, merge modal, channel filters
 │   │   │   ├── DeduplicationModal.tsx     # Side-by-side duplicate comparison and resolution
-│   │   │   ├── SlotCapacityManager.tsx    # Manage slot windows, executive load, blackout days
+│   │   │   ├── ConcurrencyStressTestModal.tsx # Live interactive race condition stress tester for atomic locking
 │   │   │   ├── FactSheetEditor.tsx        # Live editor for prices, amenities, RERA details
 │   │   │   └── FlaggedChatAudit.tsx       # Review chats where human handoff was triggered
 │   │   └── dashboard/
-│   │       ├── ExecutiveDashboard.tsx     # High-level KPIs (Response time, cost per visit)
-│   │       ├── AttributionChart.tsx       # Source performance (Portal, Social, Hoarding, Web)
-│   │       ├── LeakageCalculator.tsx      # ₹10.5L/month wasted lead recovery visualizer
-│   │       └── ShowUpRateGauge.tsx        # Booked vs Completed vs No-Show breakdown
+│   │       └── ExecutiveDashboard.tsx     # High-level KPIs, channel attribution, leakage recovery & show-up rate
 │   └── utils/
 │       ├── formatters.ts                  # Currency (₹ Lakh / Crore), date, phone formatting
-│       ├── calendarExport.ts              # Generate .ics calendar invite payload
-│       └── validators.ts                  # RERA registration format and phone validator
+│       └── calendarExport.ts              # Generate .ics calendar invite payload
 └── tests/
-    ├── deduplication.test.ts              # Unit tests for duplicate detection
-    ├── concurrencyLock.test.ts            # Unit tests for zero double-booking prevention
-    └── aiBoundaries.test.ts               # Unit tests verifying fact sheet grounding
+    └── runVerification.mjs                # Comprehensive regression test suite (Deduplication, Concurrency, AI Guardrails, Seeds)
 ```
 
 ---
