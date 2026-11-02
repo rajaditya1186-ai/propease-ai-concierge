@@ -92,7 +92,7 @@
 * **Deliverables**:
   * [x] Build `src/components/dashboard/ExecutiveDashboard.tsx`:
     * **Median Response Time**: 18 seconds vs historical 14 hours.
-    * **Cold Lead Reduction**: 3.2% vs historical 35% (slashed below the 5% target).
+    * **Cold Lead Reduction**: 2.8% vs historical 35% (slashed below the 5% target).
     * **Lead-to-Visit Rate**: 8.4% vs historical 6% (surpassing the 8% target).
     * **Monthly Revenue Saved**: Live calculation of ad spend saved (~₹9.45 Lakh/mo).
   * [x] Build channel attribution breakdown:

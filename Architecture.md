@@ -45,7 +45,7 @@ The platform is designed around a **Single Source of Truth** for leads, visit sc
                                                             v
 +-----------------------------------------------------------+-----------------------------------------------------------+
 |                                          EXECUTIVE DASHBOARD & GOVERNANCE CMS                                         |
-|    - Median First Response Time Tracker (< 2m vs 14h)     - Ad Spend Leakage Recovery Calculator (₹10.5L/mo saved)    |
+|    - Median First Response Time Tracker (< 2m vs 14h)     - Ad Spend Leakage Recovery Calculator (₹9.45L/mo recovered)|
 |    - Cost-Per-Visit by Channel (Portal, Social, Hoard)    - Sales Head Fact Sheet & RERA Master CMS                   |
 |    - Show-Up Rate & Conversion Analytics (6% to 8% target)- Flagged Chat Triage & Audit Console                       |
 +-----------------------------------------------------------------------------------------------------------------------+
