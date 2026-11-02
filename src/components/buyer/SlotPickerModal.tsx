@@ -140,33 +140,35 @@ export const SlotPickerModal: React.FC<SlotPickerModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-[#E6E4DF] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4">
+      <div className="bg-white rounded-2xl max-w-xl w-full max-h-[92dvh] flex flex-col shadow-2xl border border-[#E6E4DF] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Modal Header */}
-        <div className="bg-[#111418] text-white p-5 flex items-center justify-between border-b border-[#2A3038]">
+        <div className="bg-[#111418] text-white p-4 sm:p-5 flex items-center justify-between border-b border-[#2A3038] flex-shrink-0">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[#C5A059] text-xs font-mono uppercase tracking-widest font-semibold">
+              <span className="text-[#C5A059] text-[10px] sm:text-xs font-mono uppercase tracking-widest font-semibold">
                 Atomic Free Slot Booking
               </span>
               <span className="bg-emerald-950 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full border border-emerald-800">
                 Zero Double-Booking
               </span>
             </div>
-            <h3 className="font-serif text-xl font-bold mt-1 text-white">
+            <h3 className="font-serif text-lg sm:text-xl font-bold mt-1 text-white">
               {projectFact.commercialName}
             </h3>
-            <p className="text-xs text-gray-400">{projectFact.location.address}</p>
+            <p className="text-[11px] sm:text-xs text-gray-400 truncate max-w-xs sm:max-w-md">
+              {projectFact.location.address}
+            </p>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-gray-300 transition-colors"
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-gray-300 transition-colors cursor-pointer flex-shrink-0"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <form onSubmit={handleBookingSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleBookingSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-5 flex-1 overflow-y-auto">
           {/* Active Hold Alert Banner */}
           {isHolding && (
             <div className="bg-[#FBF7EE] border border-[#C5A059]/40 rounded-xl p-3 flex items-center justify-between">

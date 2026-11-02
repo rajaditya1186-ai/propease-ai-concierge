@@ -217,7 +217,8 @@ export const ExecutiveDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-[#F8F7F4] text-gray-700 uppercase text-[10px] tracking-wider font-bold border-b border-[#E6E4DF]">
               <tr>
@@ -260,6 +261,50 @@ export const ExecutiveDashboard: React.FC = () => {
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Dedicated Channel ROI Cards (< 768px) */}
+        <div className="md:hidden divide-y divide-[#E6E4DF] space-y-3 pt-1">
+          {channelData.map((ch) => {
+            const costPerVisit = Math.round(ch.monthlySpend / (ch.visitsCompleted || 1));
+            const chShowUp = ((ch.visitsCompleted / (ch.visitsBooked || 1)) * 100).toFixed(1);
+
+            return (
+              <div key={ch.source} className="p-4 rounded-xl bg-[#F8F7F4]/60 border border-[#E6E4DF] space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#C5A059]"></span>
+                    <span className="font-bold text-[#111418] text-sm">{ch.source}</span>
+                  </div>
+                  <span className="font-mono text-xs font-semibold text-gray-700">
+                    {formatINR(ch.monthlySpend)}/mo
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-center text-xs pt-1 border-t border-[#E6E4DF]/60">
+                  <div className="bg-white p-2 rounded-lg border border-[#E6E4DF]">
+                    <span className="text-[10px] text-gray-400 block font-semibold uppercase">Leads</span>
+                    <span className="font-mono font-bold text-[#111418]">{ch.totalLeads}</span>
+                  </div>
+                  <div className="bg-white p-2 rounded-lg border border-[#E6E4DF]">
+                    <span className="text-[10px] text-gray-400 block font-semibold uppercase">Completed</span>
+                    <span className="font-mono font-bold text-emerald-700">{ch.visitsCompleted}</span>
+                  </div>
+                  <div className="bg-white p-2 rounded-lg border border-[#E6E4DF]">
+                    <span className="text-[10px] text-gray-400 block font-semibold uppercase">Show-Up</span>
+                    <span className="font-mono font-bold text-[#C5A059]">{chShowUp}%</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[11px] text-gray-500 font-medium">Cost / Walk-in:</span>
+                  <span className="font-mono font-bold text-base text-[#111418]">
+                    {formatINR(costPerVisit)}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 

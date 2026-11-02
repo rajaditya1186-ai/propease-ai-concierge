@@ -26,7 +26,7 @@ export const HandoverDossier: React.FC<HandoverDossierProps> = ({
   onOpenWhatsAppSim,
 }) => {
   return (
-    <div className="bg-white rounded-2xl border border-[#E6E4DF] shadow-sm overflow-hidden space-y-5 p-6">
+    <div className="bg-white rounded-2xl border border-[#E6E4DF] shadow-sm overflow-hidden space-y-5 p-4 sm:p-6">
       {/* Dossier Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#E6E4DF] gap-3">
         <div>
@@ -36,8 +36,8 @@ export const HandoverDossier: React.FC<HandoverDossierProps> = ({
             </span>
             <span className="text-xs text-gray-400 font-mono">Pass #{booking.bookingId}</span>
           </div>
-          <h3 className="font-serif text-xl font-bold text-[#111418] mt-1">{booking.leadName}</h3>
-          <div className="flex items-center gap-3 text-xs text-gray-500 font-mono mt-0.5">
+          <h3 className="font-serif text-lg sm:text-xl font-bold text-[#111418] mt-1">{booking.leadName}</h3>
+          <div className="flex items-center gap-2 sm:gap-3 text-xs text-gray-500 font-mono mt-0.5 flex-wrap">
             <span className="flex items-center gap-1">
               <Phone className="w-3 h-3 text-[#C5A059]" />
               {booking.leadPhone}
@@ -48,41 +48,44 @@ export const HandoverDossier: React.FC<HandoverDossierProps> = ({
         </div>
 
         {/* Visit Outcome Controller */}
-        <div className="flex items-center gap-1.5 bg-[#F8F7F4] p-1.5 rounded-xl border border-[#E6E4DF]">
+        <div className="grid grid-cols-3 sm:flex items-center gap-1.5 bg-[#F8F7F4] p-1.5 rounded-xl border border-[#E6E4DF] w-full sm:w-auto">
           <button
             onClick={() => onUpdateStatus(booking.bookingId, 'Visited')}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            className={`flex items-center justify-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
               booking.status === 'Visited'
                 ? 'bg-emerald-600 text-white shadow-xs'
                 : 'text-gray-700 hover:bg-emerald-50 hover:text-emerald-800'
             }`}
           >
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Mark Show (Visited)</span>
+            <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="hidden sm:inline">Mark Show (Visited)</span>
+            <span className="sm:hidden">Show</span>
           </button>
 
           <button
             onClick={() => onUpdateStatus(booking.bookingId, 'No-Show')}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`flex items-center justify-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               booking.status === 'No-Show'
                 ? 'bg-rose-600 text-white shadow-xs'
                 : 'text-gray-700 hover:bg-rose-50 hover:text-rose-800'
             }`}
           >
-            <XCircle className="w-3.5 h-3.5" />
-            <span>No-Show</span>
+            <XCircle className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="hidden sm:inline">No-Show</span>
+            <span className="sm:hidden">No-Show</span>
           </button>
 
           <button
             onClick={() => onUpdateStatus(booking.bookingId, 'Rescheduled')}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`flex items-center justify-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               booking.status === 'Rescheduled'
                 ? 'bg-amber-600 text-white shadow-xs'
                 : 'text-gray-700 hover:bg-amber-50 hover:text-amber-800'
             }`}
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reschedule</span>
+            <RotateCcw className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="hidden sm:inline">Reschedule</span>
+            <span className="sm:hidden">Reschedule</span>
           </button>
         </div>
       </div>

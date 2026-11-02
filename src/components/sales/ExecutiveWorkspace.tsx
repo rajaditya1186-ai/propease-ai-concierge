@@ -24,6 +24,7 @@ export const ExecutiveWorkspace: React.FC<ExecutiveWorkspaceProps> = ({ onOpenWh
   const [selectedBooking, setSelectedBooking] = useState<SiteVisitBooking | null>(
     bookings.find((b) => b.assignedExecutiveId === 'EXEC-01') || bookings[0] || null
   );
+  const [mobileTab, setMobileTab] = useState<'queue' | 'dossier'>('queue');
 
   const activeExecutive =
     SALES_EXECUTIVES.find((e) => e.id === selectedExecutiveId) || SALES_EXECUTIVES[0];
@@ -135,10 +136,39 @@ export const ExecutiveWorkspace: React.FC<ExecutiveWorkspaceProps> = ({ onOpenWh
         </div>
       </div>
 
+      {/* Mobile Sub-Tab Selector (< 1024px) */}
+      <div className="lg:hidden flex items-center bg-[#F8F7F4] border border-[#E6E4DF] p-1 rounded-xl">
+        <button
+          onClick={() => setMobileTab('queue')}
+          className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all text-center ${
+            mobileTab === 'queue'
+              ? 'bg-[#111418] text-white shadow-xs'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          Scheduled Tours ({executiveBookings.length})
+        </button>
+        <button
+          onClick={() => setMobileTab('dossier')}
+          className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all text-center flex items-center justify-center gap-1.5 ${
+            mobileTab === 'dossier'
+              ? 'bg-[#111418] text-white shadow-xs'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          <span>Handover Dossier</span>
+          {selectedBooking && (
+            <span className="text-[10px] bg-[#C5A059]/20 text-[#C5A059] px-1.5 py-0.5 rounded-full font-mono">
+              {selectedBooking.leadName.split(' ')[0]}
+            </span>
+          )}
+        </button>
+      </div>
+
       {/* Main Content Layout: Left Queue vs Right Handover Dossier */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left: Assigned Appointments Queue (4 Cols) */}
-        <div className="lg:col-span-5 space-y-3">
+        {/* Left: Assigned Appointments Queue (4-5 Cols) */}
+        <div className={`lg:col-span-5 space-y-3 ${mobileTab === 'dossier' ? 'hidden lg:block' : 'block'}`}>
           <div className="flex items-center justify-between pb-1">
             <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
               <Calendar className="w-4 h-4 text-[#C5A059]" />
@@ -162,7 +192,10 @@ export const ExecutiveWorkspace: React.FC<ExecutiveWorkspaceProps> = ({ onOpenWh
                 return (
                   <div
                     key={b.bookingId}
-                    onClick={() => setSelectedBooking(b)}
+                    onClick={() => {
+                      setSelectedBooking(b);
+                      setMobileTab('dossier');
+                    }}
                     className={`p-4 rounded-xl border transition-all cursor-pointer relative ${
                       isSelected
                         ? 'bg-white border-[#C5A059] shadow-md ring-1 ring-[#C5A059]'
@@ -210,7 +243,7 @@ export const ExecutiveWorkspace: React.FC<ExecutiveWorkspaceProps> = ({ onOpenWh
         </div>
 
         {/* Right: Full Handover Dossier (7 Cols) */}
-        <div className="lg:col-span-7">
+        <div className={`lg:col-span-7 ${mobileTab === 'queue' ? 'hidden lg:block' : 'block'}`}>
           {selectedBooking ? (
             <HandoverDossier
               booking={selectedBooking}

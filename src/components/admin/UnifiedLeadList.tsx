@@ -180,9 +180,10 @@ export const UnifiedLeadList: React.FC = () => {
         </div>
       </div>
 
-      {/* Lead Table */}
+      {/* Lead Table (Desktop & Tablet) and Responsive Cards (Mobile) */}
       <div className="bg-white rounded-2xl border border-[#E6E4DF] shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-xs text-gray-700">
             <thead className="bg-[#F8F7F4] text-[#111418] uppercase text-[10px] tracking-wider font-bold border-b border-[#E6E4DF]">
               <tr>
@@ -317,6 +318,112 @@ export const UnifiedLeadList: React.FC = () => {
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Dedicated Card View (< 768px) */}
+        <div className="md:hidden divide-y divide-[#E6E4DF] p-2 space-y-3">
+          {filteredLeads.map((lead) => {
+            const isMandatorySample = ['LD-58210', 'LD-58211', 'LD-58224'].includes(lead.id);
+
+            return (
+              <div
+                key={lead.id}
+                className="bg-[#F8F7F4]/60 p-4 rounded-xl border border-[#E6E4DF] space-y-2.5 transition-all"
+              >
+                {/* Header: Name, Avatar, ID, Official Seed */}
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-full bg-[#111418] text-[#C5A059] flex items-center justify-center font-bold text-xs shrink-0">
+                      {lead.name.charAt(0)}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-[#111418] text-sm">{lead.name}</span>
+                        {isMandatorySample && (
+                          <span className="bg-[#C5A059]/20 text-[#8F6C27] font-semibold text-[9px] px-1.5 py-0.2 rounded-sm border border-[#C5A059]/40">
+                            Seed
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-gray-500 font-mono text-[11px] block">{lead.phone}</span>
+                    </div>
+                  </div>
+
+                  <span
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border ${getStatusBadgeColor(
+                      lead.status
+                    )}`}
+                  >
+                    {lead.status}
+                  </span>
+                </div>
+
+                {/* Sub details: Source badge & Project interest */}
+                <div className="flex items-center justify-between text-xs pt-1 border-t border-[#E6E4DF]/60">
+                  <span
+                    className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold border ${getSourceBadgeColor(
+                      lead.source
+                    )}`}
+                  >
+                    {lead.source}
+                  </span>
+
+                  <span className="text-[11px] font-medium text-gray-700">
+                    <strong className="text-[#111418]">{lead.projectInterest}</strong> • {lead.configurationWanted}
+                  </span>
+                </div>
+
+                {/* SLA and Touchpoint counts */}
+                <div className="flex items-center justify-between text-[11px] text-gray-500 pt-0.5">
+                  <div className="flex items-center gap-1">
+                    <Clock
+                      className={`w-3 h-3 ${
+                        (lead.firstResponseTimeSeconds || 0) < 120
+                          ? 'text-emerald-500'
+                          : 'text-rose-500'
+                      }`}
+                    />
+                    <span className="font-mono font-semibold">
+                      {formatResponseTime(lead.firstResponseTimeSeconds)}
+                    </span>
+                    <span className="text-[10px] text-gray-400">
+                      ({(lead.firstResponseTimeSeconds || 0) < 120 ? 'Sub-2m' : 'Cold'})
+                    </span>
+                  </div>
+
+                  {lead.touchpoints && lead.touchpoints.length > 1 && (
+                    <span className="bg-amber-100 text-amber-800 text-[9px] px-1.5 py-0.5 rounded-sm font-semibold flex items-center gap-1">
+                      <GitMerge className="w-2.5 h-2.5" /> {lead.touchpoints.length} merged
+                    </span>
+                  )}
+                </div>
+
+                {/* Mobile Actions Button Row */}
+                {(lead.status === 'Site Visit Booked' || lead.isDuplicate) && (
+                  <div className="pt-2 border-t border-[#E6E4DF] flex items-center justify-end gap-2">
+                    {lead.status === 'Site Visit Booked' && (
+                      <button
+                        onClick={() => updateLeadStatus(lead.id, 'Visited')}
+                        className="w-full py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors text-center"
+                      >
+                        Mark Visited
+                      </button>
+                    )}
+
+                    {lead.isDuplicate && (
+                      <button
+                        onClick={() => setActiveMergeLead(lead)}
+                        className="py-1.5 px-3 bg-[#111418] text-[#C5A059] rounded-lg text-xs font-semibold flex items-center gap-1 shrink-0"
+                      >
+                        <GitMerge className="w-3.5 h-3.5" />
+                        <span>Inspect Duplicate</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

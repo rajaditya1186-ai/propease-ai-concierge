@@ -64,23 +64,23 @@ export const WhatsAppSimulatorModal: React.FC = () => {
   };
 
   return (
-    <div className="max-w-xl mx-auto my-6 bg-white rounded-3xl border-4 border-[#111418] shadow-2xl overflow-hidden font-sans">
+    <div className="w-full max-w-xl mx-auto my-2 sm:my-6 bg-white rounded-2xl sm:rounded-3xl border-2 sm:border-4 border-[#111418] shadow-2xl overflow-hidden font-sans">
       {/* WhatsApp Header */}
-      <div className="bg-[#075E54] text-white px-4 py-3 flex items-center justify-between shadow-md">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-white text-[#075E54] flex items-center justify-center font-bold text-sm">
+      <div className="bg-[#075E54] text-white px-3 sm:px-4 py-3 flex items-center justify-between shadow-md">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white text-[#075E54] flex items-center justify-center font-bold text-xs sm:text-sm flex-shrink-0">
             CA
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="font-bold text-sm">Company A Verified Concierge</span>
-              <span className="w-2 h-2 rounded-full bg-[#25D366]"></span>
+              <span className="font-bold text-xs sm:text-sm truncate max-w-[170px] sm:max-w-none">Company A Verified Concierge</span>
+              <span className="w-2 h-2 rounded-full bg-[#25D366] flex-shrink-0"></span>
             </div>
-            <p className="text-[11px] text-white/80">Official Business Account • GujRERA Certified</p>
+            <p className="text-[10px] sm:text-[11px] text-white/80 truncate max-w-[200px] sm:max-w-none">Official Business Account • GujRERA Certified</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 text-white/80">
+        <div className="flex items-center gap-2 sm:gap-3 text-white/80">
           <Video className="w-4 h-4 cursor-pointer hover:text-white" />
           <Phone className="w-4 h-4 cursor-pointer hover:text-white" />
           <MoreVertical className="w-4 h-4 cursor-pointer hover:text-white" />
