@@ -56,6 +56,7 @@
 
 ### 3. Git Commit History
 ```
+527efbc feat(ui): elevate mobile and tablet responsiveness across chat, lead hub, workspace and analytics
 daabb71 feat(header): move controls, SLA monitor, project switcher and language toggles into slide-out sidebar
 4adc548 docs(memory): update commit history ledger with UI alignment commit
 04ff97e style: achieve pixel-perfect responsive alignment for GujRERA banner and main header
