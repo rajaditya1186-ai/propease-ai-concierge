@@ -56,7 +56,20 @@ export function classifyUserIntent(query: string): UserIntent {
     return 'REQUEST_HUMAN';
   }
 
-  // 3. Site Visit Intent
+  // 3. Project Comparison Intent
+  if (
+    q.includes('compare') ||
+    q.includes('difference') ||
+    q.includes('both project') ||
+    q.includes('તુલના') ||
+    q.includes('સરખામણી') ||
+    q.includes('तुलना') ||
+    q.includes('अंतर')
+  ) {
+    return 'COMPARE_PROJECTS';
+  }
+
+  // 4. Site Visit Intent
   if (
     q.includes('visit') ||
     q.includes('book') ||
@@ -380,6 +393,25 @@ export function generateGroundedResponse(
       return {
         responseText: specText,
         detectedIntent: 'ASK_PROJECT_SPECS',
+        isFlaggedForAudit: false,
+        shouldPromptBookingModal: true,
+      };
+    }
+
+    // 11. Side-by-Side Project Comparison (The Grand Orchid vs Orchid Heights)
+    case 'COMPARE_PROJECTS': {
+      let compText = '';
+      if (language === 'gu') {
+        compText = `કંપની A ના બંને પ્રોજેક્ટ્સની સરખામણી:\n\n1. ધ ગ્રાન્ડ ઓર્કિડ (S.G. હાઇવે):\n• 3 BHK લક્ઝરી (1,450 - 1,850 ચો.ફૂટ)\n• કિંમત: ₹95 લાખ થી ₹1.20 કરોડ\n• કબજો: ડિસેમ્બર 2026 | રુફટોપ પૂલ અને પિકલબોલ કોર્ટ\n\n2. ઓર્કિડ હાઇટ્સ (શેલા / સાઉથ બોપલ):\n• 2 & 3 BHK અર્બન હોમ્સ (1,050 - 1,400 ચો.ફૂટ)\n• કિંમત: ₹65 લાખ થી ₹88 લાખ\n• કબજો: માર્ચ 2027 | ક્લબ O7 પાસે\n\nતમે કયા પ્રોજેક્ટ માટે સાઇટ વિઝિટ બુક કરવા માંગો છો?`;
+      } else if (language === 'hi') {
+        compText = `कंपनी ए के दोनों प्रोजेक्ट्स की तुलना:\n\n1. द ग्रैंड ऑर्किड (एस.जी. हाईवे):\n• 3 BHK लक्जरी (1,450 - 1,850 वर्ग फीट)\n• मूल्य: ₹95 लाख से ₹1.20 करोड़\n• पजेशन: दिसंबर 2026 | रूफटॉप इन्फिनिटी पूल\n\n2. ऑर्किड हाइट्स (शेला / साउथ बोपल):\n• 2 और 3 BHK आधुनिक आवास (1,050 - 1,400 वर्ग फीट)\n• मूल्य: ₹65 लाख से ₹88 लाख\n• पजेशन: मार्च 2027 | क्लब O7 के पास\n\nआप किस प्रोजेक्ट के लिए विजिट बुक करना चाहेंगे?`;
+      } else {
+        compText = `Comparison of Company A's 2 Active Ahmedabad Projects:\n\n1. The Grand Orchid (S.G. Highway, Near Vaishnodevi Circle):\n• 3 BHK Ultra-Luxury (1,450 - 1,850 sq.ft.)\n• Price: ₹95 Lakh to ₹1.20 Crore\n• Possession: December 2026 | Rooftop Infinity Pool, Squash & Pickleball\n• GujRERA: PR/GJ/AHMEDABAD/AUDA/RAA09876/010124\n\n2. Orchid Heights (Club O7 Road, Shela):\n• 2 & 3 BHK Contemporary (1,050 - 1,400 sq.ft.)\n• Price: ₹65 Lakh to ₹88 Lakh\n• Possession: March 2027 | 3 mins from Club O7\n• GujRERA: PR/GJ/AHMEDABAD/SANAND/AUDA/RAA09877/010124\n\nWhich project matches your preference? I can book an exclusive slot for either!`;
+      }
+
+      return {
+        responseText: compText,
+        detectedIntent: 'COMPARE_PROJECTS',
         isFlaggedForAudit: false,
         shouldPromptBookingModal: true,
       };

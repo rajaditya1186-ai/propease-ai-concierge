@@ -7,6 +7,7 @@ import {
   Users,
   CalendarCheck,
   Sparkles,
+  Download,
 } from 'lucide-react';
 import { useLeadStore } from '../../store/useLeadStore';
 import { useBookingStore } from '../../store/useBookingStore';
@@ -187,9 +188,33 @@ export const ExecutiveDashboard: React.FC = () => {
               Breakdown of marketing spend, visits delivered, and true acquisition cost per walk-in.
             </p>
           </div>
-          <span className="text-xs bg-[#F8F7F4] text-gray-700 border border-[#E6E4DF] px-3 py-1.5 rounded-lg font-semibold">
-            ₹1,000 Avg. Lead Inbound Cost
-          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const headers = "Channel,Monthly Spend (INR),Leads Ingested,Visits Booked,Completed Visits,Show-Up Rate,Cost Per Completed Visit (INR)\n";
+                const rows = channelData.map(ch => {
+                  const costPerVisit = Math.round(ch.monthlySpend / (ch.visitsCompleted || 1));
+                  const chShowUp = ((ch.visitsCompleted / (ch.visitsBooked || 1)) * 100).toFixed(1);
+                  return `"${ch.source}",${ch.monthlySpend},${ch.totalLeads},${ch.visitsBooked},${ch.visitsCompleted},"${chShowUp}%",${costPerVisit}`;
+                }).join("\n");
+                const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8' });
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', `CompanyA_Attribution_Report_${new Date().toISOString().split('T')[0]}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#111418] hover:bg-[#2A3038] text-[#C5A059] shadow-xs transition-colors"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Export Attribution CSV</span>
+            </button>
+            <span className="text-xs bg-[#F8F7F4] text-gray-700 border border-[#E6E4DF] px-3 py-1.5 rounded-lg font-semibold">
+              ₹1,000 Avg. Lead Inbound Cost
+            </span>
+          </div>
         </div>
 
         <div className="overflow-x-auto">

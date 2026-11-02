@@ -14,6 +14,7 @@ export type UserIntent =
   | 'ASK_DISCOUNT' // Triggers anti-negotiation boundary
   | 'REQUEST_VISIT' // Triggers booking tool
   | 'REQUEST_HUMAN' // Triggers executive escalation
+  | 'COMPARE_PROJECTS' // Direct comparison between Project 1 and Project 2
   | 'UNKNOWN_OFF_FACTSHEET'; // Triggers missing-fact deferral & chat flagging
 
 export interface ChatMessage {
