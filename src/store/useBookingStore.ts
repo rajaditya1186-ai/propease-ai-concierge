@@ -188,6 +188,44 @@ export function useBookingStore() {
     localStorage.removeItem(REMINDERS_STORAGE_KEY);
   };
 
+  const addSlot = (projectId: ProjectId, date: string, timeString: string) => {
+    const slotId = concurrencyLock.generateSlotId(projectId, date, timeString);
+    const newSlot: SiteVisitSlot = {
+      slotId,
+      projectId,
+      date,
+      timeString,
+      displayTime: `${timeString} - (45 mins)`,
+      maxCapacity: 2,
+      confirmedCount: 0,
+      activeHoldCount: 0,
+      assignedExecutiveIds: [],
+    };
+    setSlots((prev) => {
+      const updated = [...prev, newSlot];
+      localStorage.setItem(SLOTS_STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const removeSlot = (slotId: string) => {
+    setSlots((prev) => {
+      const updated = prev.filter((s) => s.slotId !== slotId);
+      localStorage.setItem(SLOTS_STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const blockSlot = (slotId: string) => {
+    setSlots((prev) => {
+      const updated = prev.map((s) =>
+        s.slotId === slotId ? { ...s, isBlocked: true } : s
+      );
+      localStorage.setItem(SLOTS_STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   return {
     slots,
     bookings,
@@ -197,5 +235,8 @@ export function useBookingStore() {
     bookSiteVisit,
     updateBookingStatus,
     resetToSeeds,
+    addSlot,
+    removeSlot,
+    blockSlot,
   };
 }

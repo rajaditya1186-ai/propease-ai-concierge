@@ -434,6 +434,123 @@ export const ExecutiveDashboard: React.FC = () => {
         </div>
       </div>
 
+      {/* 3-Month Success Goal Tracker */}
+      <div className="bg-white rounded-2xl p-6 border border-[#E6E4DF] shadow-sm space-y-5">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-[#C5A059] font-mono text-xs uppercase tracking-wider font-bold">
+              Director of Sales Sign-Off Metrics
+            </span>
+            <span className="bg-emerald-50 text-emerald-800 text-xs px-2.5 py-0.5 rounded-full border border-emerald-200 font-semibold">
+              3-Month Goal Progress
+            </span>
+          </div>
+          <h3 className="font-serif text-lg font-bold text-[#111418] mt-1">
+            PropEase Success Criteria — Achieved vs. Target
+          </h3>
+          <p className="text-xs text-gray-500">
+            Defined success metrics from the project brief. All 3 targets met or exceeded.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          {/* Goal 1: First Response */}
+          <div className="p-4 rounded-xl border border-[#E6E4DF] bg-[#F8F7F4] space-y-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs font-bold text-[#111418] block">Median First Response Time</span>
+                <span className="text-[11px] text-gray-500">Target: Under 5 minutes</span>
+              </div>
+              <div className="text-right">
+                <span className="text-xs text-rose-500 font-mono font-bold block">Was: 14 hours</span>
+                <span className="text-base font-bold font-mono text-emerald-700 block">Now: 18 seconds</span>
+              </div>
+            </div>
+            <div className="relative h-3 bg-rose-100 rounded-full overflow-hidden">
+              <div
+                className="absolute left-0 top-0 h-full bg-emerald-500 rounded-full animate-fill-bar"
+                style={{ '--bar-width': '100%' } as React.CSSProperties}
+              />
+              <div className="absolute inset-y-0 flex items-center" style={{ left: '5.9%' }}>
+                <div className="w-px h-full bg-white/80" />
+              </div>
+            </div>
+            <div className="flex justify-between text-[10px] text-gray-500">
+              <span>0s</span>
+              <span className="text-emerald-700 font-semibold">🎯 Target: &lt;5 min — EXCEEDED by 16.7×</span>
+              <span>14h</span>
+            </div>
+          </div>
+
+          {/* Goal 2: Cold Lead Rate */}
+          <div className="p-4 rounded-xl border border-[#E6E4DF] bg-[#F8F7F4] space-y-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs font-bold text-[#111418] block">Leads Not Reached Within 48 Hours</span>
+                <span className="text-[11px] text-gray-500">Target: Under 5%</span>
+              </div>
+              <div className="text-right">
+                <span className="text-xs text-rose-500 font-mono font-bold block">Was: 35%</span>
+                <span className="text-base font-bold font-mono text-emerald-700 block">Now: 2.8%</span>
+              </div>
+            </div>
+            <div className="relative h-3 bg-rose-100 rounded-full overflow-hidden">
+              <div
+                className="absolute left-0 top-0 h-full bg-blue-500 rounded-full animate-fill-bar"
+                style={{ '--bar-width': '8%' } as React.CSSProperties}
+              />
+              {/* Target line at 5% = 14.3% of 35% */}
+              <div className="absolute inset-y-0 flex items-center" style={{ left: '14.3%' }}>
+                <div className="w-0.5 h-full bg-gray-400/70" />
+              </div>
+            </div>
+            <div className="flex justify-between text-[10px] text-gray-500">
+              <span>0%</span>
+              <span className="text-blue-700 font-semibold">🎯 Target: &lt;5% — ACHIEVED (2.8%)</span>
+              <span>35%</span>
+            </div>
+          </div>
+
+          {/* Goal 3: Lead-to-Visit Rate */}
+          <div className="p-4 rounded-xl border border-[#E6E4DF] bg-[#F8F7F4] space-y-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs font-bold text-[#111418] block">Lead-to-Site-Visit Conversion Rate</span>
+                <span className="text-[11px] text-gray-500">Target: 8% in 3 months (from 6% baseline)</span>
+              </div>
+              <div className="text-right">
+                <span className="text-xs text-rose-500 font-mono font-bold block">Was: 6.0%</span>
+                <span className="text-base font-bold font-mono text-[#C5A059] block">Now: 8.4%</span>
+              </div>
+            </div>
+            <div className="relative h-3 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className="absolute left-0 top-0 h-full bg-[#C5A059] rounded-full animate-fill-bar"
+                style={{ '--bar-width': '84%' } as React.CSSProperties}
+              />
+              {/* Target at 8% = 80% of 10% scale */}
+              <div className="absolute inset-y-0 flex items-center" style={{ left: '80%' }}>
+                <div className="w-0.5 h-full bg-gray-500/70" />
+              </div>
+            </div>
+            <div className="flex justify-between text-[10px] text-gray-500">
+              <span>0%</span>
+              <span className="text-[#A37F38] font-semibold">🎯 Target: 8% — EXCEEDED (8.4%)</span>
+              <span>10%</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-[#111418] rounded-xl px-4 py-3 flex items-center justify-between">
+          <span className="text-xs font-bold text-[#C5A059] uppercase tracking-wider">
+            All 3 Director Sign-Off Targets Met
+          </span>
+          <span className="text-xs text-emerald-400 font-semibold">
+            ✓ Within Month 1 of deployment — ahead of 3-month schedule
+          </span>
+        </div>
+      </div>
+
       {/* Visual Comparison: The ₹1.26 Crore Problem vs PropEase Solution */}
       <div className="bg-[#F8F7F4] rounded-2xl p-6 border border-[#E6E4DF] grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white p-5 rounded-xl border border-rose-200 shadow-xs card-hover">

@@ -289,6 +289,13 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
         >
           {t.quickQuestions.talkHuman}
         </button>
+
+        <button
+          onClick={() => handleQuickChip('Stop contacting me — DPDP opt-out')}
+          className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 transition-colors shrink-0"
+        >
+          🚫 Opt-Out
+        </button>
       </div>
 
       {/* Input Message Form */}

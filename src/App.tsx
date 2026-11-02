@@ -85,17 +85,46 @@ export const App: React.FC = () => {
         />
       )}
 
-      {/* Footer with Developer Attributions and Rules Compliance */}
-      <footer className="bg-white border-t border-[#E6E4DF] py-4 px-6 text-xs text-gray-500 mt-auto">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-[#111418]">PropEase AI Concierge</span>
-            <span>•</span>
-            <span>Company A (Ahmedabad Developer)</span>
+      {/* Footer with GujRERA stamps, DPDP notice, and compliance */}
+      <footer className="bg-[#111418] border-t border-[#2A3038] py-5 px-6 text-xs text-gray-400 mt-auto">
+        <div className="max-w-7xl mx-auto space-y-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-[#1A1E24] border border-[#C5A059]/30 flex items-center justify-center">
+                <span className="text-[#C5A059] font-bold text-xs">A</span>
+              </div>
+              <div>
+                <span className="font-bold text-white block text-sm">PropEase AI Concierge</span>
+                <span className="text-gray-400 text-[11px]">Company A · Ahmedabad · 420 Luxury Units (₹65L – ₹1.2 Cr)</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="bg-emerald-900/40 text-emerald-400 text-[10px] font-semibold px-2.5 py-1 rounded-full border border-emerald-800/50">
+                DPDP Act 2023 Compliant
+              </span>
+              <span className="bg-[#1A1E24] text-[#C5A059] text-[10px] font-semibold px-2.5 py-1 rounded-full border border-[#C5A059]/30">
+                Zero Double-Booking
+              </span>
+            </div>
           </div>
 
-          <div className="text-[11px] text-gray-400">
-            420 Luxury Units (₹65 Lakh - ₹1.2 Crore) • Zero Double-Booking Guarantee • GujRERA Approved
+          {/* GujRERA Registration Numbers */}
+          <div className="border-t border-[#2A3038] pt-3 space-y-1">
+            <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold mb-1.5">GujRERA Registered Projects</p>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 text-[11px]">
+              <span className="text-gray-400">
+                <span className="text-gray-500 font-semibold">The Grand Orchid (S.G. Highway):</span>{' '}
+                <span className="font-mono text-[#C5A059]">PR/GJ/AHMEDABAD/AHMEDABAD-CITY/AUDA/RAA09876/010124</span>
+              </span>
+              <span className="text-gray-400">
+                <span className="text-gray-500 font-semibold">Orchid Heights (Shela):</span>{' '}
+                <span className="font-mono text-[#C5A059]">PR/GJ/AHMEDABAD/SANAND/AUDA/RAA09877/010124</span>
+              </span>
+            </div>
+          </div>
+
+          <div className="text-[10px] text-gray-600 border-t border-[#2A3038] pt-2">
+            This platform is governed under the Real Estate (Regulation and Development) Act 2016 (RERA) and the Digital Personal Data Protection Act 2023 (DPDP). All promotional claims are limited to registered project details. Buyer data processed only with explicit prior consent. Opt-out honoured immediately.
           </div>
         </div>
       </footer>

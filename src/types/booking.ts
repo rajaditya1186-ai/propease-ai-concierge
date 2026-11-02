@@ -27,6 +27,7 @@ export interface SiteVisitSlot {
   confirmedCount: number;
   activeHoldCount: number;
   assignedExecutiveIds: string[];
+  isBlocked?: boolean; // Admin can block a slot to prevent new bookings
 }
 
 export interface SiteVisitBooking {
