@@ -7,6 +7,7 @@ import {
   FileEdit,
   Smartphone,
   Building2,
+  Zap,
 } from 'lucide-react';
 import { LanguageCode } from '../../types/lead';
 import { ProjectId } from '../../types/booking';
@@ -26,6 +27,7 @@ interface HeaderProps {
   onLanguageChange: (lang: LanguageCode) => void;
   currentProject: ProjectId;
   onProjectChange: (proj: ProjectId) => void;
+  onOpenStressTest?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -35,6 +37,7 @@ export const Header: React.FC<HeaderProps> = ({
   onLanguageChange,
   currentProject,
   onProjectChange,
+  onOpenStressTest,
 }) => {
   return (
     <header className="bg-white border-b border-[#E6E4DF] sticky top-0 z-40 shadow-sm">
@@ -133,8 +136,20 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </nav>
 
-          {/* Right Controls: SLA Indicator, Project Selector, Language Toggle */}
-          <div className="flex items-center gap-3">
+          {/* Right Controls: Concurrency Stress Test, SLA Indicator, Project Selector, Language Toggle */}
+          <div className="flex items-center gap-2.5">
+            {onOpenStressTest && (
+              <button
+                onClick={onOpenStressTest}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#111418] hover:bg-[#2A3038] text-[#C5A059] border border-[#C5A059]/40 shadow-xs transition-all"
+                title="Simulate 5 Parallel Requests Racing for the Same Slot"
+              >
+                <Zap className="w-3.5 h-3.5 fill-[#C5A059]" />
+                <span className="hidden sm:inline">Stress Test Concurrency</span>
+                <span className="sm:hidden">Test Mutex</span>
+              </button>
+            )}
+
             {/* Real-Time SLA Beacon */}
             <div className="hidden lg:flex items-center gap-2 bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1 rounded-full text-xs font-medium">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-glow"></span>

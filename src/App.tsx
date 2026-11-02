@@ -7,6 +7,8 @@ import { ExecutiveWorkspace } from './components/sales/ExecutiveWorkspace';
 import { ExecutiveDashboard } from './components/dashboard/ExecutiveDashboard';
 import { FactSheetEditor } from './components/admin/FactSheetEditor';
 import { WhatsAppSimulatorModal } from './components/sales/WhatsAppSimulatorModal';
+import { ConcurrencyStressTestModal } from './components/admin/ConcurrencyStressTestModal';
+import { useBookingStore } from './store/useBookingStore';
 import { LanguageCode } from './types/lead';
 import { ProjectId } from './types/booking';
 
@@ -14,6 +16,10 @@ export const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<AppView>('buyer-chat');
   const [language, setLanguage] = useState<LanguageCode>('en');
   const [currentProject, setCurrentProject] = useState<ProjectId>('Project 1');
+  const [isStressTestOpen, setIsStressTestOpen] = useState(false);
+
+  const { slots } = useBookingStore();
+  const testSlot = slots.find((s) => s.projectId === currentProject) || slots[0];
 
   return (
     <div className="min-h-screen bg-[#F8F7F4] flex flex-col text-[#181A1D]">
@@ -28,6 +34,7 @@ export const App: React.FC = () => {
         onLanguageChange={setLanguage}
         currentProject={currentProject}
         onProjectChange={setCurrentProject}
+        onOpenStressTest={() => setIsStressTestOpen(true)}
       />
 
       {/* Main Viewport Container */}
@@ -68,6 +75,15 @@ export const App: React.FC = () => {
           </div>
         )}
       </main>
+
+      {/* Concurrency Mutex Race-Condition Stress Test Modal */}
+      {testSlot && (
+        <ConcurrencyStressTestModal
+          isOpen={isStressTestOpen}
+          onClose={() => setIsStressTestOpen(false)}
+          targetSlot={testSlot}
+        />
+      )}
 
       {/* Footer with Developer Attributions and Rules Compliance */}
       <footer className="bg-white border-t border-[#E6E4DF] py-4 px-6 text-xs text-gray-500 mt-auto">
