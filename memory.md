@@ -74,6 +74,7 @@
 
 ### 3. Git Commit History
 ```
+f008617 refactor(ui): remove unwanted speculative toolbars, audio effects, and extra modals for clean luxury aesthetic
 4955945 feat(ux): elevate to client-ready product with interactive director sandbox, lead dossier drawer, command palette, and audio feedback
 412dd35 feat: close problem-statement gaps — slot manager, DPDP opt-out, 3-month goal tracker, enhanced footer with GujRERA stamps
 ef01671 feat(ui): animated KPI counters, progress bars, glassmorphic passcard, chat entrance animations and micro-interactions
