@@ -5,13 +5,10 @@ import {
   Calendar,
   AlertCircle,
   ArrowRight,
-  Mic,
   Zap,
   Globe,
   Home,
   RotateCcw,
-  Calculator,
-  Compass,
   MapPin,
   ExternalLink,
 } from 'lucide-react';
@@ -23,21 +20,18 @@ import { useFactSheetStore } from '../../store/useFactSheetStore';
 import { SlotPickerModal } from './SlotPickerModal';
 import { BookingPasscard } from './BookingPasscard';
 import { TRANSLATIONS } from '../../data/translations';
-import { sounds } from '../../utils/soundEffects';
 
 interface BuyerChatWidgetProps {
   currentProject: ProjectId;
   language: LanguageCode;
-  onOpenEmiModal?: () => void;
-  onOpenFloorPlans?: () => void;
 }
 
-// Persona demo data
+// Persona demo data from official problem statement
 const PERSONAS = [
   {
     name: 'Hardik Patel',
     id: 'LD-58210',
-    source: 'Portal',
+    source: 'Property portal',
     letter: 'H',
     query: 'Looking for 3 BHK flat on S.G. Highway.',
     avatarBg: 'bg-indigo-100 text-indigo-700',
@@ -46,7 +40,7 @@ const PERSONAS = [
   {
     name: 'Nidhi Shah',
     id: 'LD-58211',
-    source: 'Social Ad',
+    source: 'Social media ad',
     letter: 'N',
     query: 'Can I know 2 BHK price in Shela and amenities?',
     avatarBg: 'bg-pink-100 text-pink-700',
@@ -55,20 +49,11 @@ const PERSONAS = [
   {
     name: 'Kavita Joshi',
     id: 'LD-58224',
-    source: 'Hoarding',
+    source: 'Hoarding call',
     letter: 'K',
     query: 'Saw the hoarding on SP Ring Road. Tell me location.',
     avatarBg: 'bg-amber-100 text-amber-700',
     sourceBg: 'bg-amber-50 text-amber-600 border-amber-200',
-  },
-  {
-    name: 'Hitesh Prajapati',
-    id: 'LD-DEMO-GUJ',
-    source: 'Ahmedabad Walk-in',
-    letter: 'હિ',
-    query: '3 BHK નું કારપેટ એરિયા અને AUDA મંજૂરી શું છે?',
-    avatarBg: 'bg-emerald-100 text-emerald-800',
-    sourceBg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   },
 ];
 
@@ -86,8 +71,6 @@ function formatMessageText(text: string): React.ReactNode {
 export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
   currentProject,
   language,
-  onOpenEmiModal,
-  onOpenFloorPlans,
 }) => {
   const { messages, isTyping, sendMessage, resetChat } = useChatStore();
   const { slots, holdSlot, bookSiteVisit } = useBookingStore();
@@ -100,114 +83,35 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
   const [latestBooking, setLatestBooking] = useState<SiteVisitBooking | null>(null);
   const [showPersonas, setShowPersonas] = useState(false);
   const [activePersona, setActivePersona] = useState<string | null>(null);
-  const [isListening, setIsListening] = useState(false);
-  const [speechError, setSpeechError] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const recognitionRef = useRef<unknown>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
-
-  // Play sound when AI finishes typing
-  const prevTypingRef = useRef(isTyping);
-  useEffect(() => {
-    if (prevTypingRef.current && !isTyping && messages.length > 0) {
-      sounds.playReceived();
-    }
-    prevTypingRef.current = isTyping;
-  }, [isTyping, messages.length]);
 
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!inputQuery.trim() || isTyping) return;
     const query = inputQuery;
     setInputQuery('');
-    sounds.playSent();
     await sendMessage(query, currentFact);
   };
 
   const handleQuickChip = async (chipText: string) => {
-    sounds.playClick();
     if (chipText === t.quickQuestions.bookVisit) {
       setIsSlotModalOpen(true);
       return;
     }
-    sounds.playSent();
     await sendMessage(chipText, currentFact);
   };
 
   const handlePersonaSelect = async (persona: typeof PERSONAS[0]) => {
-    sounds.playClick();
     setActivePersona(persona.id);
     setShowPersonas(false);
-    sounds.playSent();
     await sendMessage(`Hi, this is ${persona.name} (${persona.id}). ${persona.query}`, currentFact);
     setTimeout(() => setActivePersona(null), 2000);
-  };
-
-  // Web Speech API Voice Dictation
-  const toggleSpeechRecognition = () => {
-    sounds.playClick();
-    const windowWithSpeech = window as unknown as {
-      webkitSpeechRecognition?: any;
-      SpeechRecognition?: any;
-    };
-    const SpeechRec = windowWithSpeech.SpeechRecognition || windowWithSpeech.webkitSpeechRecognition;
-
-    if (!SpeechRec) {
-      setSpeechError('Voice dictation is not supported in this browser. Please type.');
-      setTimeout(() => setSpeechError(null), 4000);
-      return;
-    }
-
-    if (isListening && recognitionRef.current) {
-      try {
-        (recognitionRef.current as any).stop();
-      } catch {}
-      setIsListening(false);
-      return;
-    }
-
-    try {
-      const recognition = new SpeechRec();
-      recognition.continuous = false;
-      recognition.interimResults = true;
-      recognition.lang = language === 'gu' ? 'gu-IN' : language === 'hi' ? 'hi-IN' : 'en-IN';
-
-      recognition.onstart = () => {
-        setIsListening(true);
-        setSpeechError(null);
-      };
-
-      recognition.onresult = (event: any) => {
-        const transcript = Array.from(event.results)
-          .map((result: any) => result[0].transcript)
-          .join('');
-        setInputQuery(transcript);
-      };
-
-      recognition.onerror = (err: any) => {
-        setIsListening(false);
-        if (err.error !== 'no-speech') {
-          setSpeechError(`Voice error: ${err.error || 'permission denied'}`);
-          setTimeout(() => setSpeechError(null), 4000);
-        }
-      };
-
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-
-      recognitionRef.current = recognition;
-      recognition.start();
-    } catch {
-      setIsListening(false);
-      setSpeechError('Could not start voice recognition.');
-      setTimeout(() => setSpeechError(null), 4000);
-    }
   };
 
   const isEmpty = messages.length === 0 && !latestBooking;
@@ -219,19 +123,14 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
       <div className="bg-[#1A1E24] text-gray-300 border-b border-[#2A3038]">
         <div className="px-4 py-2 flex items-center justify-between">
           <button
-            onClick={() => {
-              sounds.playClick();
-              setShowPersonas(!showPersonas);
-            }}
+            onClick={() => setShowPersonas(!showPersonas)}
             className="flex items-center gap-1.5 text-[11px] font-bold text-[#C5A059] uppercase tracking-wider hover:text-[#E0B96A] transition-colors"
           >
             <Sparkles className="w-3 h-3" />
-            Try a Demo Persona
+            Try a Ground Truth Persona
             <span className={`transition-transform duration-200 ${showPersonas ? 'rotate-180' : ''}`}>▾</span>
           </button>
-          <span className="text-[10px] text-gray-400 hidden sm:block">
-            Pre-configured client test inquiries
-          </span>
+          <span className="text-[10px] text-gray-500 hidden sm:block">Preloaded sample leads from developer brief</span>
         </div>
 
         {/* Collapsible persona chips */}
@@ -287,43 +186,10 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Floor plans quick trigger */}
-          {onOpenFloorPlans && (
-            <button
-              onClick={() => {
-                sounds.playClick();
-                onOpenFloorPlans();
-              }}
-              className="hidden md:flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-[#2A3038] hover:bg-[#3A4048] text-gray-300 hover:text-white transition-colors border border-[#3A4048]"
-              title="View Architectural Floor Plans"
-            >
-              <Compass className="w-3.5 h-3.5 text-[#C5A059]" />
-              <span>Floor Plans</span>
-            </button>
-          )}
-
-          {/* EMI calculator quick trigger */}
-          {onOpenEmiModal && (
-            <button
-              onClick={() => {
-                sounds.playClick();
-                onOpenEmiModal();
-              }}
-              className="hidden md:flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-[#2A3038] hover:bg-[#3A4048] text-gray-300 hover:text-white transition-colors border border-[#3A4048]"
-              title="Gujarat Stamp Duty & EMI Estimator"
-            >
-              <Calculator className="w-3.5 h-3.5 text-indigo-400" />
-              <span>EMI</span>
-            </button>
-          )}
-
           {/* Book Visit CTA */}
           <button
-            onClick={() => {
-              sounds.playClick();
-              setIsSlotModalOpen(true);
-            }}
-            className="flex items-center gap-1.5 bg-[#C5A059] hover:bg-[#B8904F] text-[#111418] font-bold text-xs px-3 py-2 rounded-xl shadow-sm transition-all hover:scale-[1.03] active:scale-95 glow-bronze btn-ripple"
+            onClick={() => setIsSlotModalOpen(true)}
+            className="flex items-center gap-1.5 bg-[#C5A059] hover:bg-[#B8904F] text-[#111418] font-bold text-xs px-3 py-2 rounded-xl shadow-xs transition-all hover:scale-[1.03] active:scale-95 glow-bronze btn-ripple"
           >
             <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
             <span className="hidden sm:inline">Book Visit</span>
@@ -332,10 +198,7 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
 
           {/* Reset chat */}
           <button
-            onClick={() => {
-              sounds.playClick();
-              resetChat();
-            }}
+            onClick={resetChat}
             className="p-2 rounded-lg text-gray-500 hover:text-gray-200 hover:bg-white/10 transition-colors"
             title="Reset conversation"
             aria-label="Reset chat"
@@ -384,7 +247,7 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
               ].map((pill) => (
                 <span
                   key={pill.text}
-                  className="flex items-center gap-1.5 bg-white border border-[#E6E4DF] rounded-full px-3.5 py-1.5 text-xs font-semibold text-[#111418] shadow-sm"
+                  className="flex items-center gap-1.5 bg-white border border-[#E6E4DF] rounded-full px-3.5 py-1.5 text-xs font-semibold text-[#111418] shadow-xs"
                 >
                   <span className="text-[#C5A059]">{pill.icon}</span>
                   {pill.text}
@@ -393,7 +256,7 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
             </div>
 
             <p className="text-[11px] text-gray-400 z-10 animate-pulse">
-              ↓ Choose a quick question, speak via mic, or type below
+              ↓ Choose a quick question or type below
             </p>
           </div>
         )}
@@ -419,7 +282,7 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
               >
                 {/* AI avatar */}
                 {!isUser && (
-                  <div className="w-8 h-8 rounded-full bg-[#111418] text-[#C5A059] flex items-center justify-center shrink-0 mb-1 font-serif font-bold text-xs shadow-sm border border-[#C5A059]/30">
+                  <div className="w-8 h-8 rounded-full bg-[#111418] text-[#C5A059] flex items-center justify-center shrink-0 mb-1 font-serif font-bold text-xs shadow-xs border border-[#C5A059]/30">
                     A
                   </div>
                 )}
@@ -430,7 +293,7 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
                     className={`rounded-2xl px-4 py-3 text-xs sm:text-sm leading-relaxed relative ${
                       isUser
                         ? 'bg-gradient-to-br from-[#111418] to-[#1C2128] text-white rounded-br-sm shadow-md'
-                        : 'bg-white text-[#181A1D] border border-[#E6E4DF] rounded-bl-sm shadow-sm border-l-[3px] border-l-[#C5A059]/50'
+                        : 'bg-white text-[#181A1D] border border-[#E6E4DF] rounded-bl-sm shadow-xs border-l-[3px] border-l-[#C5A059]/50'
                     }`}
                   >
                     <p className="whitespace-pre-line">
@@ -447,49 +310,18 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
                       </div>
                     )}
 
-                    {/* Interactive Action Pills inside AI bubble */}
+                    {/* Action button inside AI bubble */}
                     {!isUser && (
                       <div className="mt-3 pt-2.5 border-t border-[#F0EDE8] flex flex-wrap items-center gap-2">
                         {/* Book Visit CTA for Price/Visit Intent */}
                         {(msg.detectedIntent === 'ASK_PRICE' || msg.detectedIntent === 'REQUEST_VISIT') && (
                           <button
-                            onClick={() => {
-                              sounds.playClick();
-                              setIsSlotModalOpen(true);
-                            }}
+                            onClick={() => setIsSlotModalOpen(true)}
                             className="flex items-center gap-1.5 bg-gradient-to-r from-[#C5A059] to-[#A37F38] hover:brightness-105 text-[#111418] text-xs font-bold px-3 py-1.5 rounded-xl transition-all shadow-xs hover:scale-[1.01] active:scale-[0.99] btn-ripple"
                           >
                             <Calendar className="w-3.5 h-3.5" />
                             <span>Reserve Visit Slot</span>
                             <ArrowRight className="w-3 h-3" />
-                          </button>
-                        )}
-
-                        {/* EMI Calculator CTA when discussing pricing */}
-                        {(msg.detectedIntent === 'ASK_PRICE' || msg.detectedIntent === 'ASK_DISCOUNT') && onOpenEmiModal && (
-                          <button
-                            onClick={() => {
-                              sounds.playClick();
-                              onOpenEmiModal();
-                            }}
-                            className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 transition-colors"
-                          >
-                            <Calculator className="w-3 h-3" />
-                            <span>Calculate Monthly EMI</span>
-                          </button>
-                        )}
-
-                        {/* Floor Plans CTA when discussing configuration or amenities */}
-                        {(msg.detectedIntent === 'ASK_AMENITIES' || msg.detectedIntent === 'ASK_PROJECT_SPECS') && onOpenFloorPlans && (
-                          <button
-                            onClick={() => {
-                              sounds.playClick();
-                              onOpenFloorPlans();
-                            }}
-                            className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-xl bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200 transition-colors"
-                          >
-                            <Compass className="w-3 h-3 text-[#C5A059]" />
-                            <span>View Unit Floor Plans</span>
                           </button>
                         )}
 
@@ -521,7 +353,7 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
 
                 {/* User avatar initial */}
                 {isUser && (
-                  <div className="w-8 h-8 rounded-full bg-[#3E54AC] text-white flex items-center justify-center shrink-0 mb-1 font-bold text-xs shadow-sm flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-[#3E54AC] text-white flex items-center justify-center shrink-0 mb-1 font-bold text-xs shadow-xs flex-shrink-0">
                     U
                   </div>
                 )}
@@ -535,7 +367,7 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
               <div className="w-8 h-8 rounded-full bg-[#111418] text-[#C5A059] flex items-center justify-center shrink-0 font-serif font-bold text-xs border border-[#C5A059]/30">
                 A
               </div>
-              <div className="bg-white border border-[#E6E4DF] border-l-[3px] border-l-[#C5A059]/50 px-5 py-3 rounded-2xl rounded-bl-sm shadow-sm relative overflow-hidden">
+              <div className="bg-white border border-[#E6E4DF] border-l-[3px] border-l-[#C5A059]/50 px-5 py-3 rounded-2xl rounded-bl-sm shadow-xs relative overflow-hidden">
                 <div className="absolute inset-0 animate-shimmer pointer-events-none opacity-50" />
                 <div className="flex items-center gap-1.5 relative z-10">
                   <span className="w-2 h-2 bg-[#C5A059] rounded-full typing-dot" />
@@ -559,7 +391,7 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
           {/* Primary CTA chip */}
           <button
             onClick={() => handleQuickChip(t.quickQuestions.bookVisit)}
-            className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-bold bg-[#111418] text-white hover:bg-[#2A3038] flex items-center gap-1.5 shadow-sm transition-all shrink-0 btn-ripple"
+            className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-bold bg-[#111418] text-white hover:bg-[#2A3038] flex items-center gap-1.5 shadow-xs transition-all shrink-0 btn-ripple"
           >
             <Calendar className="w-3.5 h-3.5 text-[#C5A059]" />
             {t.quickQuestions.bookVisit}
@@ -599,52 +431,25 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
             onClick={() => handleQuickChip('Stop contacting me — DPDP opt-out')}
             className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 transition-all shrink-0"
           >
-            🚫 DPDP Opt-Out
+            🚫 Opt-Out
           </button>
         </div>
       </div>
-
-      {/* Speech error indicator */}
-      {speechError && (
-        <div className="bg-amber-50 px-4 py-1.5 text-xs text-amber-800 border-t border-amber-200 flex items-center gap-1.5">
-          <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
-          <span>{speechError}</span>
-        </div>
-      )}
 
       {/* ── Input Form ──────────────────────────────────────────────── */}
       <form
         onSubmit={handleSend}
         className="px-3 sm:px-4 py-3 bg-white border-t border-[#E6E4DF] flex items-center gap-2 flex-shrink-0"
       >
-        {/* Active Speech Recognition Toggle */}
-        <button
-          type="button"
-          onClick={toggleSpeechRecognition}
-          className={`p-2.5 rounded-xl transition-all flex-shrink-0 ${
-            isListening
-              ? 'bg-rose-500 text-white animate-pulse shadow-md ring-2 ring-rose-300'
-              : 'text-gray-400 hover:text-[#C5A059] hover:bg-[#FBF7EE]'
-          }`}
-          title={isListening ? 'Listening... click to stop' : 'Voice input (Web Speech API)'}
-          aria-label={isListening ? 'Stop listening' : 'Start voice input'}
-        >
-          {isListening ? <Mic className="w-4 h-4 animate-bounce" /> : <Mic className="w-4 h-4" />}
-        </button>
-
         <div className="flex-1 relative">
           <input
             ref={inputRef}
             type="text"
             value={inputQuery}
             onChange={(e) => setInputQuery(e.target.value)}
-            placeholder={isListening ? 'Listening to speech...' : t.inputPlaceholder}
+            placeholder={t.inputPlaceholder}
             disabled={isTyping}
-            className={`w-full px-4 py-2.5 text-xs sm:text-sm bg-[#F8F7F4] border rounded-xl focus:outline-none transition-all text-[#181A1D] disabled:opacity-50 placeholder:text-gray-400 ${
-              isListening
-                ? 'border-rose-400 ring-2 ring-rose-100 bg-rose-50/20'
-                : 'border-[#E6E4DF] focus:ring-2 focus:ring-[#C5A059]/50 focus:border-[#C5A059] focus:bg-white'
-            }`}
+            className="w-full px-4 py-2.5 text-xs sm:text-sm bg-[#F8F7F4] border border-[#E6E4DF] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C5A059]/50 focus:border-[#C5A059] focus:bg-white transition-all text-[#181A1D] disabled:opacity-50 placeholder:text-gray-400"
           />
           {inputQuery.length > 100 && (
             <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono tabular-nums ${inputQuery.length > 500 ? 'text-rose-500' : 'text-gray-400'}`}>
@@ -656,7 +461,7 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
         <button
           type="submit"
           disabled={!inputQuery.trim() || isTyping}
-          className={`p-2.5 sm:p-3 rounded-xl font-bold transition-all shadow-sm flex-shrink-0 ${
+          className={`p-2.5 sm:p-3 rounded-xl font-bold transition-all shadow-xs flex-shrink-0 ${
             inputQuery.trim() && !isTyping
               ? 'bg-[#111418] hover:bg-[#2A3038] text-[#C5A059] hover:scale-110 active:scale-95 shadow-md btn-ripple'
               : 'bg-gray-100 text-gray-300 cursor-not-allowed'
@@ -677,12 +482,7 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
         onHoldSlot={holdSlot}
         onConfirmBooking={(slotId, leadId, name, phone, proj, config) => {
           const res = bookSiteVisit(slotId, leadId, name, phone, proj, config);
-          if (res.success && res.booking) {
-            sounds.playSuccess();
-            setLatestBooking(res.booking);
-          } else {
-            sounds.playAlert();
-          }
+          if (res.success && res.booking) setLatestBooking(res.booking);
           return res;
         }}
         onBookingSuccess={() => setIsSlotModalOpen(false)}

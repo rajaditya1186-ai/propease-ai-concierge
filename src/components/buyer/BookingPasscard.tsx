@@ -18,7 +18,6 @@ import { LanguageCode } from '../../types/lead';
 import { MASTER_FACT_SHEET } from '../../data/factSheetData';
 import { downloadCalendarInvite } from '../../utils/calendarExport';
 import { TRANSLATIONS } from '../../data/translations';
-import { sounds } from '../../utils/soundEffects';
 
 interface BookingPasscardProps {
   booking: SiteVisitBooking;
@@ -49,7 +48,6 @@ export const BookingPasscard: React.FC<BookingPasscardProps> = ({
 
   // Auto-hide confetti after 1.5s
   useEffect(() => {
-    sounds.playSuccess();
     const t1 = setTimeout(() => setShowCelebration(false), 1500);
     const t2 = setTimeout(() => setCelebrationRing(false), 900);
     return () => { clearTimeout(t1); clearTimeout(t2); };
@@ -205,7 +203,6 @@ export const BookingPasscard: React.FC<BookingPasscardProps> = ({
               {onOpenWhatsAppSim && (
                 <button
                   onClick={() => {
-                    sounds.playClick();
                     onOpenWhatsAppSim();
                   }}
                   className="text-xs font-bold text-[#8F6C27] hover:underline flex items-center gap-1"
@@ -223,7 +220,6 @@ export const BookingPasscard: React.FC<BookingPasscardProps> = ({
               href={booking.locationPin.googleMapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => sounds.playClick()}
               className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-[#111418] hover:bg-[#2A3038] text-white shadow-xs transition-all hover:scale-[1.02] active:scale-95 btn-ripple"
             >
               <MapPin className="w-4 h-4 text-[#C5A059]" />
@@ -232,10 +228,7 @@ export const BookingPasscard: React.FC<BookingPasscardProps> = ({
             </a>
 
             <button
-              onClick={() => {
-                sounds.playClick();
-                downloadCalendarInvite(booking);
-              }}
+              onClick={() => downloadCalendarInvite(booking)}
               className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-white hover:bg-gray-50 text-[#111418] border border-[#E6E4DF] shadow-xs transition-all hover:scale-[1.02] active:scale-95 btn-ripple"
             >
               <Download className="w-4 h-4 text-[#C5A059]" />
@@ -246,10 +239,7 @@ export const BookingPasscard: React.FC<BookingPasscardProps> = ({
           {onDismiss && (
             <div className="text-center pt-1">
               <button
-                onClick={() => {
-                  sounds.playClick();
-                  onDismiss();
-                }}
+                onClick={onDismiss}
                 className="text-xs text-gray-500 hover:text-gray-800 underline underline-offset-2 transition-colors"
               >
                 Back to Chat Concierge

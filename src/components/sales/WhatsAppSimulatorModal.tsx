@@ -10,7 +10,6 @@ import {
 } from 'lucide-react';
 import { useBookingStore } from '../../store/useBookingStore';
 import { MASTER_FACT_SHEET } from '../../data/factSheetData';
-import { sounds } from '../../utils/soundEffects';
 
 export const WhatsAppSimulatorModal: React.FC = () => {
   const { bookings } = useBookingStore();
@@ -39,7 +38,6 @@ export const WhatsAppSimulatorModal: React.FC = () => {
     const textToSend = (customText || replyText).trim();
     if (!textToSend) return;
 
-    sounds.playSent();
     const newMsg = {
       id: `WA-${Date.now()}`,
       sender: 'user',
@@ -52,9 +50,7 @@ export const WhatsAppSimulatorModal: React.FC = () => {
 
     if (textToSend.toUpperCase() === 'STOP') {
       setOptedOut(true);
-      sounds.playAlert();
       setTimeout(() => {
-        sounds.playReceived();
         setChatLog((prev) => [
           ...prev,
           {
@@ -67,9 +63,7 @@ export const WhatsAppSimulatorModal: React.FC = () => {
       }, 500);
     } else if (textToSend.toUpperCase() === 'START') {
       setOptedOut(false);
-      sounds.playSuccess();
       setTimeout(() => {
-        sounds.playReceived();
         setChatLog((prev) => [
           ...prev,
           {
@@ -82,7 +76,6 @@ export const WhatsAppSimulatorModal: React.FC = () => {
       }, 500);
     } else {
       setTimeout(() => {
-        sounds.playReceived();
         setChatLog((prev) => [
           ...prev,
           {

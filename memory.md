@@ -60,18 +60,15 @@
   * Synchronized metrics (2.8% cold lead rate, ₹9.45L/mo net ad recovery of ₹10.5L/mo gross bleed).
 * [x] **Step 13: Clean Git Commit History**:
   * Staged and committed with author `Aditya Raj <rajaditya.1186@gmail.com>`.
-* [x] **Step 14: "What Great Looks Like" UI/UX & Interactive Client Suite**:
-  * **Interactive Director's ROI Sandbox**: Dynamic sliders for monthly ad budget and target visit conversion, calculating monthly/annual capital rescued and setup payback period.
-  * **Lead Dossier & Touchpoint Drawer**: Complete multi-channel timeline, E.164 phone verification, 1-click WhatsApp, pipeline status updater, and internal sales notes.
-  * **Filtered Lead CSV Export**: Instant report generation for central developer reporting.
-  * **Client Guided Demo Bar**: 1-click test scenarios for Evaluators (Hardik Patel deduplication test, Anti-negotiation guardrail test, Concurrency stress test).
-  * **System Limits & Production Boundaries Modal**: Clear, honest disclosure of AI constraints (fact-sheet grounding, non-negotiation, human handover requirement).
-  * **Gujarat Stamp Duty & Home Loan EMI Estimator**: Real-world Ahmedabad real estate calculator (5% stamp duty, 1% registration, 8.5% interest).
-  * **Architectural Blueprints & Floor Plans Modal**: High-definition interactive layout viewer for The Grand Orchid and Orchid Heights.
-  * **Global Command Palette (`⌘K` / `Ctrl+K`)**: Keyboard-driven quick switcher across all views and tools.
-  * **Synthesized Web Audio Effects (`soundEffects.ts`)**: Pure Web Audio API acoustic feedback for messages, clicks, alerts, and booking celebrations.
-  * **Animated Branded Splash Screen**: 2.2-second entrance screen with GujRERA and DPDP compliance marks.
-  * **Booking Celebration**: Confetti burst animation and boarding pass card.
+* [x] **Step 14: Restoring Calm Luxury Design & Removing Unwanted Clutter**:
+  * **Removed Speculative Elements**: Stripped out floating `ClientDemoBar`, synthetic Web Audio bleeps (`soundEffects.ts`), decorative non-functional voice dictation, and extraneous speculative modals (`CommandPalette`, `EmiCalculatorModal`, `FloorPlanModal`, `SystemLimitsModal`) to honor the developer's core design ethos: *"The client values good, minimal design: clean layouts, white space, a restrained palette and clear type, with nothing on screen that lacks a purpose. Design counts as much as features. The chat and booking flow should feel calm and premium, in keeping with the price of the homes."*
+  * **Retained High-Value Client Enhancements**:
+    * **Director's Interactive ROI Scenario Sandbox**: Dynamic scenario sliders for monthly ad budget and target visit conversion in the Executive Dashboard, calculating capital rescued and payback period.
+    * **Lead Dossier Slide-Over Drawer**: Detailed timeline, E.164 phone verification, 1-click WhatsApp, pipeline status updater, and internal sales notes.
+    * **Filtered Lead CSV Export**: 1-click export for corporate developer records.
+    * **Luxury Booking Passcard**: Boarding-pass styling with tear lines, security QR badge, RERA registration, and Google Maps pin.
+    * **5-Buyer Concurrency Stress Test**: Live automated race-condition demonstration accessible from the clean Settings drawer.
+    * **WhatsApp DPDP Opt-In/Opt-Out Simulator**: Interactive test modal for GujRERA templates and DPDP `STOP`/`START` opt-out compliance.
 
 ---
 
