@@ -77,6 +77,10 @@
 
 ### 3. Git Commit History
 ```
+4955945 feat(ux): elevate to client-ready product with interactive director sandbox, lead dossier drawer, command palette, and audio feedback
+412dd35 feat: close problem-statement gaps — slot manager, DPDP opt-out, 3-month goal tracker, enhanced footer with GujRERA stamps
+ef01671 feat(ui): animated KPI counters, progress bars, glassmorphic passcard, chat entrance animations and micro-interactions
+2e67199 docs(memory): update ledger with responsive design commit
 527efbc feat(ui): elevate mobile and tablet responsiveness across chat, lead hub, workspace and analytics
 daabb71 feat(header): move controls, SLA monitor, project switcher and language toggles into slide-out sidebar
 4adc548 docs(memory): update commit history ledger with UI alignment commit
