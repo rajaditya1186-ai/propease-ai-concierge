@@ -12,11 +12,14 @@ import { useLeadStore } from '../../store/useLeadStore';
 import { HandoverDossier } from './HandoverDossier';
 import { SiteVisitBooking } from '../../types/booking';
 
+import { Toast } from '../../hooks/useToast';
+
 interface ExecutiveWorkspaceProps {
   onOpenWhatsAppSim?: () => void;
+  onToast?: (toast: Omit<Toast, 'id'>) => void;
 }
 
-export const ExecutiveWorkspace: React.FC<ExecutiveWorkspaceProps> = ({ onOpenWhatsAppSim }) => {
+export const ExecutiveWorkspace: React.FC<ExecutiveWorkspaceProps> = ({ onOpenWhatsAppSim, onToast }) => {
   const { bookings, updateBookingStatus } = useBookingStore();
   const { leads } = useLeadStore();
 
@@ -186,7 +189,15 @@ export const ExecutiveWorkspace: React.FC<ExecutiveWorkspaceProps> = ({ onOpenWh
             </div>
           ) : (
             <div className="space-y-2.5">
-              {executiveBookings.map((b) => {
+              {executiveBookings.length === 0 ? (
+                <div className="py-12 text-center space-y-3">
+                  <div className="w-12 h-12 rounded-full bg-[#F8F7F4] border border-[#E6E4DF] flex items-center justify-center mx-auto">
+                    <Calendar className="w-5 h-5 text-gray-300" />
+                  </div>
+                  <p className="text-xs font-semibold text-gray-500">No visits assigned to this advisor</p>
+                  <p className="text-[11px] text-gray-400">Select another advisor from the dropdown above</p>
+                </div>
+              ) : executiveBookings.map((b) => {
                 const isSelected = selectedBooking?.bookingId === b.bookingId;
 
                 return (
@@ -248,7 +259,11 @@ export const ExecutiveWorkspace: React.FC<ExecutiveWorkspaceProps> = ({ onOpenWh
             <HandoverDossier
               booking={selectedBooking}
               lead={leads.find((l) => l.phone === selectedBooking.leadPhone)}
-              onUpdateStatus={updateBookingStatus}
+              onUpdateStatus={(bookingId, status) => {
+                updateBookingStatus(bookingId, status);
+                const labels: Record<string, string> = { Visited: 'Visit confirmed ✓', 'No-Show': 'No-show logged', Rescheduled: 'Rescheduled' };
+                onToast?.({ type: status === 'Visited' ? 'success' : status === 'No-Show' ? 'warning' : 'info', title: labels[status] || 'Status updated', message: `Booking updated to "${status}".` });
+              }}
               onOpenWhatsAppSim={onOpenWhatsAppSim}
             />
           ) : (

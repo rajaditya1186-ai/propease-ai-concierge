@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { SiteVisitBooking, BookingStatus } from '../../types/booking';
 import { Lead } from '../../types/lead';
+import { sounds } from '../../utils/soundEffects';
 
 interface HandoverDossierProps {
   booking: SiteVisitBooking;
@@ -50,7 +51,10 @@ export const HandoverDossier: React.FC<HandoverDossierProps> = ({
         {/* Visit Outcome Controller */}
         <div className="grid grid-cols-3 sm:flex items-center gap-1.5 bg-[#F8F7F4] p-1.5 rounded-xl border border-[#E6E4DF] w-full sm:w-auto">
           <button
-            onClick={() => onUpdateStatus(booking.bookingId, 'Visited')}
+            onClick={() => {
+              sounds.playSuccess();
+              onUpdateStatus(booking.bookingId, 'Visited');
+            }}
             className={`flex items-center justify-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
               booking.status === 'Visited'
                 ? 'bg-emerald-600 text-white shadow-xs'
@@ -63,7 +67,10 @@ export const HandoverDossier: React.FC<HandoverDossierProps> = ({
           </button>
 
           <button
-            onClick={() => onUpdateStatus(booking.bookingId, 'No-Show')}
+            onClick={() => {
+              sounds.playAlert();
+              onUpdateStatus(booking.bookingId, 'No-Show');
+            }}
             className={`flex items-center justify-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               booking.status === 'No-Show'
                 ? 'bg-rose-600 text-white shadow-xs'
@@ -76,7 +83,10 @@ export const HandoverDossier: React.FC<HandoverDossierProps> = ({
           </button>
 
           <button
-            onClick={() => onUpdateStatus(booking.bookingId, 'Rescheduled')}
+            onClick={() => {
+              sounds.playClick();
+              onUpdateStatus(booking.bookingId, 'Rescheduled');
+            }}
             className={`flex items-center justify-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               booking.status === 'Rescheduled'
                 ? 'bg-amber-600 text-white shadow-xs'

@@ -6,9 +6,11 @@ import {
   CheckCheck,
   Send,
   ShieldCheck,
+  Sparkles,
 } from 'lucide-react';
 import { useBookingStore } from '../../store/useBookingStore';
 import { MASTER_FACT_SHEET } from '../../data/factSheetData';
+import { sounds } from '../../utils/soundEffects';
 
 export const WhatsAppSimulatorModal: React.FC = () => {
   const { bookings } = useBookingStore();
@@ -32,24 +34,27 @@ export const WhatsAppSimulatorModal: React.FC = () => {
     },
   ]);
 
-  const handleSendReply = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!replyText.trim()) return;
+  const handleSendReply = (e?: React.FormEvent, customText?: string) => {
+    if (e) e.preventDefault();
+    const textToSend = (customText || replyText).trim();
+    if (!textToSend) return;
 
-    const userText = replyText.trim();
+    sounds.playSent();
     const newMsg = {
       id: `WA-${Date.now()}`,
       sender: 'user',
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      body: userText,
+      body: textToSend,
     };
 
     setChatLog((prev) => [...prev, newMsg]);
     setReplyText('');
 
-    if (userText.toUpperCase() === 'STOP') {
+    if (textToSend.toUpperCase() === 'STOP') {
       setOptedOut(true);
+      sounds.playAlert();
       setTimeout(() => {
+        sounds.playReceived();
         setChatLog((prev) => [
           ...prev,
           {
@@ -60,6 +65,34 @@ export const WhatsAppSimulatorModal: React.FC = () => {
           },
         ]);
       }, 500);
+    } else if (textToSend.toUpperCase() === 'START') {
+      setOptedOut(false);
+      sounds.playSuccess();
+      setTimeout(() => {
+        sounds.playReceived();
+        setChatLog((prev) => [
+          ...prev,
+          {
+            id: `WA-${Date.now()}-SYS`,
+            sender: 'business',
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            body: `Welcome back! Automated notifications re-enabled for your upcoming site visits.`,
+          },
+        ]);
+      }, 500);
+    } else {
+      setTimeout(() => {
+        sounds.playReceived();
+        setChatLog((prev) => [
+          ...prev,
+          {
+            id: `WA-${Date.now()}-SYS`,
+            sender: 'business',
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            body: `Thank you for your response! Your message has been routed to your assigned advisor ${activeBooking?.assignedExecutiveName || 'Rajesh Mehta'} who will assist you shortly.`,
+          },
+        ]);
+      }, 600);
     }
   };
 
@@ -68,13 +101,13 @@ export const WhatsAppSimulatorModal: React.FC = () => {
       {/* WhatsApp Header */}
       <div className="bg-[#075E54] text-white px-3 sm:px-4 py-3 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-2.5 sm:gap-3">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white text-[#075E54] flex items-center justify-center font-bold text-xs sm:text-sm flex-shrink-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white text-[#075E54] flex items-center justify-center font-bold text-xs sm:text-sm shrink-0">
             CA
           </div>
           <div>
             <div className="flex items-center gap-1.5">
               <span className="font-bold text-xs sm:text-sm truncate max-w-[170px] sm:max-w-none">Company A Verified Concierge</span>
-              <span className="w-2 h-2 rounded-full bg-[#25D366] flex-shrink-0"></span>
+              <span className="w-2 h-2 rounded-full bg-[#25D366] shrink-0"></span>
             </div>
             <p className="text-[10px] sm:text-[11px] text-white/80 truncate max-w-[200px] sm:max-w-none">Official Business Account • GujRERA Certified</p>
           </div>
@@ -120,14 +153,45 @@ export const WhatsAppSimulatorModal: React.FC = () => {
         {optedOut && (
           <div className="text-center my-2">
             <span className="text-[11px] bg-rose-100 text-rose-800 px-3 py-1 rounded-full font-semibold border border-rose-200">
-              Opt-Out Active: Communication Suspended
+              Opt-Out Active: Communication Suspended under DPDP
             </span>
           </div>
         )}
       </div>
 
+      {/* Quick Interactive WhatsApp Simulation Chips */}
+      <div className="bg-[#F7F7F7] px-3 py-2 border-t border-gray-200 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider shrink-0 flex items-center gap-1">
+          <Sparkles className="w-2.5 h-2.5 text-[#075E54]" /> Try:
+        </span>
+        <button
+          onClick={() => handleSendReply(undefined, 'STOP')}
+          className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 hover:bg-rose-200 border border-rose-300 shrink-0 transition-colors"
+        >
+          🛑 Send &quot;STOP&quot; (Opt-Out)
+        </button>
+        <button
+          onClick={() => handleSendReply(undefined, 'START')}
+          className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300 shrink-0 transition-colors"
+        >
+          ✅ Send &quot;START&quot; (Opt-In)
+        </button>
+        <button
+          onClick={() => handleSendReply(undefined, 'Will arrive on time')}
+          className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 shrink-0 transition-colors"
+        >
+          🚗 &quot;Will arrive on time&quot;
+        </button>
+        <button
+          onClick={() => handleSendReply(undefined, 'Please reschedule to 4 PM')}
+          className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 shrink-0 transition-colors"
+        >
+          🕒 &quot;Please reschedule&quot;
+        </button>
+      </div>
+
       {/* Message Input Box */}
-      <form onSubmit={handleSendReply} className="bg-[#F0F0F0] p-3 flex items-center gap-2 border-t border-gray-200">
+      <form onSubmit={(e) => handleSendReply(e)} className="bg-[#F0F0F0] p-3 flex items-center gap-2 border-t border-gray-200">
         <input
           type="text"
           value={replyText}
@@ -138,7 +202,7 @@ export const WhatsAppSimulatorModal: React.FC = () => {
         <button
           type="submit"
           disabled={!replyText.trim()}
-          className="w-9 h-9 rounded-full bg-[#075E54] hover:bg-[#128C7E] text-white flex items-center justify-center transition-colors shadow-xs"
+          className="w-9 h-9 rounded-full bg-[#075E54] hover:bg-[#128C7E] text-white flex items-center justify-center transition-colors shadow-xs disabled:opacity-50"
         >
           <Send className="w-4 h-4" />
         </button>

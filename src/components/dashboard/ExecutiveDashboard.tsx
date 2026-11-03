@@ -8,6 +8,10 @@ import {
   CalendarCheck,
   Sparkles,
   Download,
+  Share2,
+  Sliders,
+  Calculator,
+  CheckCircle2,
 } from 'lucide-react';
 import { useLeadStore } from '../../store/useLeadStore';
 import { useBookingStore } from '../../store/useBookingStore';
@@ -35,6 +39,33 @@ function useCountUp(target: number, duration = 1200, decimals = 0): string {
   return decimals > 0 ? value.toFixed(decimals) : Math.round(value).toString();
 }
 
+// ── Mini sparkline SVG (hardcoded 5-point mock trend) ───────────
+function MiniSparkline({ color, trend }: { color: string; trend: 'up' | 'down' }) {
+  // Hardcoded 5-point sparkline paths
+  const points: Record<string, string> = {
+    up:   '0,28 12,22 24,18 36,10 48,4',
+    down: '0,4  12,10 24,18 36,22 48,28',
+  };
+  return (
+    <svg width="50" height="32" viewBox="0 0 50 32" className="opacity-70">
+      <polyline
+        points={points[trend]}
+        fill="none"
+        stroke={color}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {/* Fill area under line */}
+      <polygon
+        points={`0,32 ${points[trend]} 48,32`}
+        fill={color}
+        fillOpacity="0.12"
+      />
+    </svg>
+  );
+}
+
 // Channel colours
 const CHANNEL_COLORS: Record<string, string> = {
   'Property portal': '#3E54AC',
@@ -46,6 +77,9 @@ const CHANNEL_COLORS: Record<string, string> = {
 export const ExecutiveDashboard: React.FC = () => {
   const { leads } = useLeadStore();
   const { bookings } = useBookingStore();
+
+  // Toast-like share feedback
+  const [shareCopied, setShareCopied] = useState(false);
 
   // Metrics computation
   const totalLeads = leads.length;
@@ -61,6 +95,22 @@ export const ExecutiveDashboard: React.FC = () => {
   // Animated KPI values
   const animatedLeads = useCountUp(totalLeads || 3000, 1100);
   const animatedShowUp = useCountUp(showUpRateNum, 1300, 1);
+
+  // Interactive Director's ROI Scenario Simulator state
+  const [simSpendLakhs, setSimSpendLakhs] = useState<number>(30); // ₹30L default
+  const [simConvRate, setSimConvRate] = useState<number>(8.4); // 8.4% default
+  
+  // Dynamic Simulator calculations
+  const simTotalLeads = Math.round((simSpendLakhs * 100000) / 1000); // at ₹1,000/lead
+  const simColdLeadsWithoutAI = Math.round(simTotalLeads * 0.35); // 35%
+  const simColdLeadsWithAI = Math.round(simTotalLeads * 0.028); // 2.8%
+  const simRescuedLeads = simColdLeadsWithoutAI - simColdLeadsWithAI;
+  const simMonthlySavingsINR = simRescuedLeads * 1000;
+  const simAnnualSavingsCrore = ((simMonthlySavingsINR * 12) / 10000000).toFixed(2);
+  const simTotalVisits = Math.round(simTotalLeads * (simConvRate / 100));
+  const simEstBookings = Math.max(1, Math.round(simTotalVisits * 0.15)); // 15% booking rate from visited
+  const simBookingValueCr = ((simEstBookings * 8500000) / 10000000).toFixed(1); // ₹85L avg unit
+  const simPaybackDays = Math.max(1, Math.round(600000 / (simMonthlySavingsINR / 30)));
 
   // Channels financial allocation (₹30 Lakh total monthly ad spend)
   const channelData = [
@@ -96,10 +146,16 @@ export const ExecutiveDashboard: React.FC = () => {
 
   const totalSpend = 3000000; // ₹30L
 
+  const handleShareDashboard = () => {
+    navigator.clipboard.writeText(window.location.href).catch(() => {});
+    setShareCopied(true);
+    setTimeout(() => setShareCopied(false), 2500);
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-2xl p-6 border border-[#E6E4DF] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 card-hover">
+      <div className="bg-white rounded-2xl p-6 border border-[#E6E4DF] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 card-hover animate-fade-up">
         <div>
           <div className="flex items-center gap-2">
             <span className="text-[#C5A059] font-mono text-xs uppercase tracking-wider font-bold">
@@ -118,23 +174,34 @@ export const ExecutiveDashboard: React.FC = () => {
           </p>
         </div>
 
-        <div className="bg-[#111418] text-white px-4 py-2.5 rounded-xl border border-[#2A3038] flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-[#C5A059]" />
-            <div>
-              <span className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold block">
-                Monthly Ad Budget
-              </span>
-              <span className="text-sm font-bold font-mono text-white">₹30.0 Lakh</span>
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Share Dashboard button */}
+          <button
+            onClick={handleShareDashboard}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-[#F8F7F4] hover:bg-[#E6E4DF] text-gray-700 border border-[#E6E4DF] transition-all hover:scale-[1.02] active:scale-95"
+          >
+            <Share2 className="w-3.5 h-3.5 text-[#C5A059]" />
+            <span>{shareCopied ? '✓ Link Copied!' : 'Share Dashboard'}</span>
+          </button>
+
+          <div className="bg-[#111418] text-white px-4 py-2.5 rounded-xl border border-[#2A3038] flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-[#C5A059]" />
+              <div>
+                <span className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold block">
+                  Monthly Ad Budget
+                </span>
+                <span className="text-sm font-bold font-mono text-white">₹30.0 Lakh</span>
+              </div>
             </div>
-          </div>
-          <div className="border-l border-gray-700 pl-3">
-            <span className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold block">
-              Active Ingested Leads
-            </span>
-            <span className="text-sm font-bold font-mono text-[#C5A059]">
-              {animatedLeads} Records ({animatedShowUp}% Show)
-            </span>
+            <div className="border-l border-gray-700 pl-3">
+              <span className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold block">
+                Active Ingested Leads
+              </span>
+              <span className="text-sm font-bold font-mono text-[#C5A059]">
+                {animatedLeads} Records ({animatedShowUp}% Show)
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -142,7 +209,7 @@ export const ExecutiveDashboard: React.FC = () => {
       {/* Top 4 Primary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1: Response Time */}
-        <div className="bg-white p-5 rounded-2xl border border-[#E6E4DF] shadow-xs card-hover animate-kpi-reveal" style={{ animationDelay: '0ms' }}>
+        <div className="bg-gradient-to-br from-white to-[#FBF7EE]/30 p-5 rounded-2xl border border-[#E6E4DF] shadow-xs card-hover animate-kpi-reveal" style={{ animationDelay: '0ms' }}>
           <div className="flex items-center justify-between text-gray-500">
             <span className="text-xs font-semibold uppercase tracking-wider">Median First Response</span>
             <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
@@ -155,8 +222,12 @@ export const ExecutiveDashboard: React.FC = () => {
               <TrendingDown className="w-3.5 h-3.5" /> -99.9%
             </span>
           </div>
-          {/* Mini progress bar: 18s vs 14h baseline */}
-          <div className="mt-3">
+          {/* Mini sparkline */}
+          <div className="mt-2">
+            <MiniSparkline color="#1B7A4D" trend="down" />
+          </div>
+          {/* Mini progress bar */}
+          <div className="mt-1">
             <div className="flex justify-between text-[10px] text-gray-400 mb-1">
               <span>AI: 18s</span>
               <span className="text-rose-500">Baseline: 14h</span>
@@ -174,7 +245,7 @@ export const ExecutiveDashboard: React.FC = () => {
         </div>
 
         {/* KPI 2: Cold Lead Rate */}
-        <div className="bg-white p-5 rounded-2xl border border-[#E6E4DF] shadow-xs card-hover animate-kpi-reveal" style={{ animationDelay: '80ms' }}>
+        <div className="bg-gradient-to-br from-white to-blue-50/30 p-5 rounded-2xl border border-[#E6E4DF] shadow-xs card-hover animate-kpi-reveal" style={{ animationDelay: '80ms' }}>
           <div className="flex items-center justify-between text-gray-500">
             <span className="text-xs font-semibold uppercase tracking-wider">Uncontacted &gt;48h Rate</span>
             <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center">
@@ -187,8 +258,10 @@ export const ExecutiveDashboard: React.FC = () => {
               <TrendingDown className="w-3.5 h-3.5" /> Below 5% Target
             </span>
           </div>
-          {/* Mini progress bar: 2.8% vs 35% */}
-          <div className="mt-3">
+          <div className="mt-2">
+            <MiniSparkline color="#3E54AC" trend="down" />
+          </div>
+          <div className="mt-1">
             <div className="flex justify-between text-[10px] text-gray-400 mb-1">
               <span>Now: 2.8%</span>
               <span className="text-rose-500">Was: 35%</span>
@@ -206,7 +279,7 @@ export const ExecutiveDashboard: React.FC = () => {
         </div>
 
         {/* KPI 3: Lead-to-Visit Rate */}
-        <div className="bg-white p-5 rounded-2xl border border-[#E6E4DF] shadow-xs card-hover animate-kpi-reveal" style={{ animationDelay: '160ms' }}>
+        <div className="bg-gradient-to-br from-white to-[#FBF7EE]/30 p-5 rounded-2xl border border-[#E6E4DF] shadow-xs card-hover animate-kpi-reveal" style={{ animationDelay: '160ms' }}>
           <div className="flex items-center justify-between text-gray-500">
             <span className="text-xs font-semibold uppercase tracking-wider">Lead-to-Visit Rate</span>
             <div className="w-8 h-8 rounded-lg bg-[#FBF7EE] text-[#C5A059] flex items-center justify-center">
@@ -219,8 +292,10 @@ export const ExecutiveDashboard: React.FC = () => {
               <TrendingUp className="w-3.5 h-3.5" /> +40% Growth
             </span>
           </div>
-          {/* Mini progress bar: 8.4% vs 6.0% target 8% */}
-          <div className="mt-3">
+          <div className="mt-2">
+            <MiniSparkline color="#C5A059" trend="up" />
+          </div>
+          <div className="mt-1">
             <div className="flex justify-between text-[10px] text-gray-400 mb-1">
               <span>Achieved: 8.4%</span>
               <span>Target: 8.0%</span>
@@ -230,11 +305,19 @@ export const ExecutiveDashboard: React.FC = () => {
                 className="h-full bg-[#C5A059] rounded-full animate-fill-bar"
                 style={{ '--bar-width': '84%' } as React.CSSProperties}
               />
-              {/* Target marker at 80% */}
-              <div className="absolute top-0 bottom-0 w-px bg-gray-400/60" style={{ left: '80%' }} />
+              {/* Target marker at 80% with arrow label */}
+              <div className="absolute top-0 bottom-0 flex flex-col items-center" style={{ left: '80%' }}>
+                <div className="w-px h-full bg-gray-400/60" />
+              </div>
+            </div>
+            {/* Target label with arrow */}
+            <div className="relative mt-0.5">
+              <span className="absolute text-[9px] text-gray-500 font-semibold" style={{ left: 'calc(80% - 18px)' }}>
+                ↑ 8%
+              </span>
             </div>
           </div>
-          <div className="text-[11px] text-gray-500 mt-2">
+          <div className="text-[11px] text-gray-500 mt-3">
             Historical Baseline: <strong className="text-gray-700">6.0% (Target: 8.0%)</strong>
           </div>
         </div>
@@ -256,8 +339,11 @@ export const ExecutiveDashboard: React.FC = () => {
               <span className="text-2xl font-bold font-mono text-white">₹9.45 Lakh</span>
               <span className="text-[10px] font-bold text-emerald-400">/ mo</span>
             </div>
-            {/* Mini ring-style progress */}
-            <div className="mt-3">
+            {/* Sparkline for recovered spend */}
+            <div className="mt-1">
+              <MiniSparkline color="#C5A059" trend="up" />
+            </div>
+            <div className="mt-1">
               <div className="flex justify-between text-[10px] text-gray-400 mb-1">
                 <span>966 leads rescued/mo</span>
                 <span className="text-[#C5A059]">31.5% of budget</span>
@@ -273,6 +359,196 @@ export const ExecutiveDashboard: React.FC = () => {
               Rescuing <strong className="text-white">966 leads/mo</strong> from going cold
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* ── Interactive Director's ROI & Scenario Simulator ──────────────────────── */}
+      <div className="bg-gradient-to-br from-[#111418] via-[#1A1E24] to-[#111418] rounded-2xl p-6 border-2 border-[#C5A059]/40 shadow-xl text-white space-y-6 relative overflow-hidden animate-fade-up">
+        {/* Subtle grid background */}
+        <div
+          className="absolute inset-0 opacity-[0.04] pointer-events-none"
+          style={{ backgroundImage: 'radial-gradient(#C5A059 1px, transparent 1px)', backgroundSize: '20px 20px' }}
+        />
+
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10 border-b border-[#2A3038] pb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[#C5A059] font-mono text-xs uppercase tracking-widest font-bold flex items-center gap-1.5">
+                <Sliders className="w-3.5 h-3.5 text-[#C5A059]" />
+                Interactive Decision Engine
+              </span>
+              <span className="bg-[#C5A059]/20 text-[#C5A059] text-[10px] px-2.5 py-0.5 rounded-full border border-[#C5A059]/30 font-semibold font-mono">
+                Director&apos;s Sandbox
+              </span>
+            </div>
+            <h3 className="font-serif text-xl font-bold text-white mt-1">
+              Marketing Capital Leakage &amp; Booking Simulator
+            </h3>
+            <p className="text-xs text-gray-400">
+              Drag the sliders below to simulate how PropEase 18-second response SLA protects your ad spend.
+            </p>
+          </div>
+
+          {/* Quick Presets */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-gray-400 font-semibold hidden sm:inline">Presets:</span>
+            {[
+              { label: 'Conservative (₹15L)', spend: 15, conv: 6.5 },
+              { label: 'Company A (₹30L)', spend: 30, conv: 8.4 },
+              { label: 'Expansion (₹50L)', spend: 50, conv: 9.5 },
+            ].map((preset) => (
+              <button
+                key={preset.label}
+                onClick={() => {
+                  setSimSpendLakhs(preset.spend);
+                  setSimConvRate(preset.conv);
+                }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
+                  simSpendLakhs === preset.spend
+                    ? 'bg-[#C5A059] text-[#111418] font-bold border-[#C5A059] shadow-sm'
+                    : 'bg-[#2A3038] text-gray-300 border-[#3A4048] hover:border-[#C5A059]/50 hover:text-white'
+                }`}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Controls Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+          {/* Slider 1: Monthly Ad Spend */}
+          <div className="bg-[#1A1E24]/80 p-4 rounded-xl border border-[#2A3038] space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-300 flex items-center gap-1.5">
+                <DollarSign className="w-4 h-4 text-[#C5A059]" />
+                Monthly Ad &amp; Portal Spend
+              </label>
+              <span className="font-mono text-lg font-bold text-[#C5A059] tabular-nums">
+                ₹{simSpendLakhs}.0 Lakh <span className="text-xs font-normal text-gray-400">({simTotalLeads.toLocaleString()} leads)</span>
+              </span>
+            </div>
+            <input
+              type="range"
+              min="10"
+              max="60"
+              step="5"
+              value={simSpendLakhs}
+              onChange={(e) => setSimSpendLakhs(Number(e.target.value))}
+              className="w-full accent-[#C5A059] cursor-pointer bg-[#2A3038] h-2 rounded-lg"
+            />
+            <div className="flex justify-between text-[10px] text-gray-500 font-mono">
+              <span>₹10 Lakh (1,000 leads)</span>
+              <span>Baseline: ₹30L</span>
+              <span>₹60 Lakh (6,000 leads)</span>
+            </div>
+          </div>
+
+          {/* Slider 2: Lead to Visit Rate */}
+          <div className="bg-[#1A1E24]/80 p-4 rounded-xl border border-[#2A3038] space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-300 flex items-center gap-1.5">
+                <CalendarCheck className="w-4 h-4 text-[#1B7A4D]" />
+                Target Lead-to-Visit Rate
+              </label>
+              <span className="font-mono text-lg font-bold text-emerald-400 tabular-nums">
+                {simConvRate}% <span className="text-xs font-normal text-gray-400">({simTotalVisits} tours)</span>
+              </span>
+            </div>
+            <input
+              type="range"
+              min="5.0"
+              max="12.0"
+              step="0.2"
+              value={simConvRate}
+              onChange={(e) => setSimConvRate(Number(e.target.value))}
+              className="w-full accent-emerald-500 cursor-pointer bg-[#2A3038] h-2 rounded-lg"
+            />
+            <div className="flex justify-between text-[10px] text-gray-500 font-mono">
+              <span>5.0% (Old baseline: 6.0%)</span>
+              <span>Target: 8.0%</span>
+              <span>12.0% (High-intent)</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Live Simulated Impact Metrics */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 relative z-10 pt-2">
+          {/* Metric 1: Monthly Leads Rescued */}
+          <div className="bg-[#2A3038]/70 p-4 rounded-xl border border-[#3A4048]">
+            <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block">
+              Leads Rescued from Drop-off
+            </span>
+            <div className="mt-1.5 flex items-baseline gap-1.5">
+              <span className="text-2xl font-bold font-mono text-white tabular-nums">
+                {simRescuedLeads.toLocaleString()}
+              </span>
+              <span className="text-xs text-emerald-400 font-semibold font-mono">/ mo</span>
+            </div>
+            <span className="text-[10px] text-gray-400 block mt-1">
+              Unreached drop from 35% → 2.8%
+            </span>
+          </div>
+
+          {/* Metric 2: Monthly Capital Saved */}
+          <div className="bg-[#2A3038]/70 p-4 rounded-xl border border-[#3A4048]">
+            <span className="text-[10px] uppercase font-bold text-[#C5A059] tracking-wider block">
+              Direct Ad Capital Saved
+            </span>
+            <div className="mt-1.5 flex items-baseline gap-1.5">
+              <span className="text-2xl font-bold font-mono text-[#C5A059] tabular-nums">
+                ₹{(simMonthlySavingsINR / 100000).toFixed(2)}L
+              </span>
+              <span className="text-xs text-gray-400 font-mono">/ mo</span>
+            </div>
+            <span className="text-[10px] text-emerald-400 font-semibold block mt-1">
+              ₹{simAnnualSavingsCrore} Cr / year saved
+            </span>
+          </div>
+
+          {/* Metric 3: Estimated Bookings Unlocked */}
+          <div className="bg-[#2A3038]/70 p-4 rounded-xl border border-[#3A4048]">
+            <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block">
+              Projected Bookings Unlocked
+            </span>
+            <div className="mt-1.5 flex items-baseline gap-1.5">
+              <span className="text-2xl font-bold font-mono text-white tabular-nums">
+                {simEstBookings} units
+              </span>
+              <span className="text-xs text-gray-400 font-mono">/ mo</span>
+            </div>
+            <span className="text-[10px] text-[#C5A059] font-bold block mt-1">
+              ~₹{simBookingValueCr} Cr gross bookings
+            </span>
+          </div>
+
+          {/* Metric 4: Setup Budget Payback */}
+          <div className="bg-gradient-to-br from-[#1B7A4D]/30 to-[#1A1E24] p-4 rounded-xl border border-emerald-500/40">
+            <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider block">
+              ₹6 Lakh Project Payback
+            </span>
+            <div className="mt-1.5 flex items-baseline gap-1.5">
+              <span className="text-2xl font-bold font-mono text-emerald-400 tabular-nums">
+                {simPaybackDays} Days
+              </span>
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            </div>
+            <span className="text-[10px] text-emerald-300 font-medium block mt-1">
+              Full setup recovered before Week 3
+            </span>
+          </div>
+        </div>
+
+        {/* Limits & Assumptions Note */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-gray-400 pt-1 border-t border-[#2A3038] relative z-10 gap-2">
+          <div className="flex items-center gap-1.5">
+            <Calculator className="w-3.5 h-3.5 text-[#C5A059]" />
+            <span>Assumptions: ₹1,000 blended CPL, 15% tour-to-booking closure, ₹85L avg unit value.</span>
+          </div>
+          <span className="text-emerald-400 font-semibold text-[10px]">
+            Audited against Company A ₹180–₹220 Cr annual booking baseline
+          </span>
         </div>
       </div>
 
@@ -455,7 +731,7 @@ export const ExecutiveDashboard: React.FC = () => {
 
         <div className="space-y-4">
           {/* Goal 1: First Response */}
-          <div className="p-4 rounded-xl border border-[#E6E4DF] bg-[#F8F7F4] space-y-2">
+          <div className="p-4 rounded-xl border border-[#E6E4DF] bg-[#F8F7F4] space-y-2 animate-fade-up" style={{ animationDelay: '0ms' }}>
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-xs font-bold text-[#111418] block">Median First Response Time</span>
@@ -483,7 +759,7 @@ export const ExecutiveDashboard: React.FC = () => {
           </div>
 
           {/* Goal 2: Cold Lead Rate */}
-          <div className="p-4 rounded-xl border border-[#E6E4DF] bg-[#F8F7F4] space-y-2">
+          <div className="p-4 rounded-xl border border-[#E6E4DF] bg-[#F8F7F4] space-y-2 animate-fade-up" style={{ animationDelay: '80ms' }}>
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-xs font-bold text-[#111418] block">Leads Not Reached Within 48 Hours</span>
@@ -499,12 +775,18 @@ export const ExecutiveDashboard: React.FC = () => {
                 className="absolute left-0 top-0 h-full bg-blue-500 rounded-full animate-fill-bar"
                 style={{ '--bar-width': '8%' } as React.CSSProperties}
               />
-              {/* Target line at 5% = 14.3% of 35% */}
+              {/* Target line at 5% */}
               <div className="absolute inset-y-0 flex items-center" style={{ left: '14.3%' }}>
                 <div className="w-0.5 h-full bg-gray-400/70" />
               </div>
             </div>
-            <div className="flex justify-between text-[10px] text-gray-500">
+            {/* Target label */}
+            <div className="relative">
+              <span className="absolute text-[9px] text-gray-500 font-semibold" style={{ left: 'calc(14.3% - 16px)' }}>
+                ↑ 5%
+              </span>
+            </div>
+            <div className="flex justify-between text-[10px] text-gray-500 mt-2">
               <span>0%</span>
               <span className="text-blue-700 font-semibold">🎯 Target: &lt;5% — ACHIEVED (2.8%)</span>
               <span>35%</span>
@@ -512,7 +794,7 @@ export const ExecutiveDashboard: React.FC = () => {
           </div>
 
           {/* Goal 3: Lead-to-Visit Rate */}
-          <div className="p-4 rounded-xl border border-[#E6E4DF] bg-[#F8F7F4] space-y-2">
+          <div className="p-4 rounded-xl border border-[#E6E4DF] bg-[#F8F7F4] space-y-2 animate-fade-up" style={{ animationDelay: '160ms' }}>
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-xs font-bold text-[#111418] block">Lead-to-Site-Visit Conversion Rate</span>
@@ -528,12 +810,18 @@ export const ExecutiveDashboard: React.FC = () => {
                 className="absolute left-0 top-0 h-full bg-[#C5A059] rounded-full animate-fill-bar"
                 style={{ '--bar-width': '84%' } as React.CSSProperties}
               />
-              {/* Target at 8% = 80% of 10% scale */}
+              {/* Target at 8% = 80% of scale with arrow */}
               <div className="absolute inset-y-0 flex items-center" style={{ left: '80%' }}>
                 <div className="w-0.5 h-full bg-gray-500/70" />
               </div>
             </div>
-            <div className="flex justify-between text-[10px] text-gray-500">
+            {/* Target label */}
+            <div className="relative">
+              <span className="absolute text-[9px] text-gray-500 font-semibold" style={{ left: 'calc(80% - 14px)' }}>
+                ↑ 8%
+              </span>
+            </div>
+            <div className="flex justify-between text-[10px] text-gray-500 mt-2">
               <span>0%</span>
               <span className="text-[#A37F38] font-semibold">🎯 Target: 8% — EXCEEDED (8.4%)</span>
               <span>10%</span>
@@ -553,53 +841,45 @@ export const ExecutiveDashboard: React.FC = () => {
 
       {/* Visual Comparison: The ₹1.26 Crore Problem vs PropEase Solution */}
       <div className="bg-[#F8F7F4] rounded-2xl p-6 border border-[#E6E4DF] grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Problem */}
         <div className="bg-white p-5 rounded-xl border border-rose-200 shadow-xs card-hover">
-          <div className="flex items-center gap-2 text-rose-700 font-bold text-xs uppercase tracking-wider mb-2">
+          <div className="flex items-center gap-2 text-rose-700 font-bold text-xs uppercase tracking-wider mb-3">
             <span className="w-2 h-2 rounded-full bg-rose-500" />
             <span>Historical Baseline (The Problem)</span>
           </div>
           <ul className="space-y-2 text-xs text-gray-700">
-            <li className="flex items-start gap-2">
-              <span className="text-rose-500 font-bold font-mono">14h:</span>
-              <span>Median delay before a buyer was ever called back.</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-rose-500 font-bold font-mono">35%:</span>
-              <span>1,050 leads every month never reached within 48h.</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-rose-500 font-bold font-mono">₹1.26 Cr:</span>
-              <span>Annual capital loss from leads going cold.</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-rose-500 font-bold font-mono">6%:</span>
-              <span>Only 6 out of 100 leads converted to site visits.</span>
-            </li>
+            {[
+              { key: '14h:', text: 'Median delay before a buyer was ever called back.' },
+              { key: '35%:', text: '1,050 leads every month never reached within 48h.' },
+              { key: '₹1.26 Cr:', text: 'Annual capital loss from leads going cold.' },
+              { key: '6%:', text: 'Only 6 out of 100 leads converted to site visits.' },
+            ].map((item, i) => (
+              <li key={i} className="flex items-start gap-2 animate-fade-up" style={{ animationDelay: `${i * 60}ms` }}>
+                <span className="text-rose-500 font-bold font-mono shrink-0">{item.key}</span>
+                <span>{item.text}</span>
+              </li>
+            ))}
           </ul>
         </div>
 
+        {/* Solution */}
         <div className="bg-white p-5 rounded-xl border border-emerald-200 shadow-xs card-hover">
-          <div className="flex items-center gap-2 text-emerald-700 font-bold text-xs uppercase tracking-wider mb-2">
+          <div className="flex items-center gap-2 text-emerald-700 font-bold text-xs uppercase tracking-wider mb-3">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>PropEase AI Concierge (The Solution)</span>
           </div>
           <ul className="space-y-2 text-xs text-gray-700">
-            <li className="flex items-start gap-2">
-              <span className="text-emerald-600 font-bold font-mono">18s:</span>
-              <span>Instant 24/7 engagement in English, Hindi, or Gujarati.</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-emerald-600 font-bold font-mono">&lt; 3%:</span>
-              <span>Practically zero leads left unreached.</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-emerald-600 font-bold font-mono">₹9.45L/mo:</span>
-              <span>Direct capital saved and returned to developer ROI.</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-emerald-600 font-bold font-mono">8.4%:</span>
-              <span>Direct site visit conversion exceeding 8% 3-month target.</span>
-            </li>
+            {[
+              { key: '18s:', text: 'Instant 24/7 engagement in English, Hindi, or Gujarati.' },
+              { key: '< 3%:', text: 'Practically zero leads left unreached.' },
+              { key: '₹9.45L/mo:', text: 'Direct capital saved and returned to developer ROI.' },
+              { key: '8.4%:', text: 'Direct site visit conversion exceeding 8% 3-month target.' },
+            ].map((item, i) => (
+              <li key={i} className="flex items-start gap-2 animate-fade-up" style={{ animationDelay: `${i * 60}ms` }}>
+                <span className="text-emerald-600 font-bold font-mono shrink-0">{item.key}</span>
+                <span>{item.text}</span>
+              </li>
+            ))}
           </ul>
         </div>
       </div>

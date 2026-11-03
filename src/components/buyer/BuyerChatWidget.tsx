@@ -5,6 +5,15 @@ import {
   Calendar,
   AlertCircle,
   ArrowRight,
+  Mic,
+  Zap,
+  Globe,
+  Home,
+  RotateCcw,
+  Calculator,
+  Compass,
+  MapPin,
+  ExternalLink,
 } from 'lucide-react';
 import { ProjectId, SiteVisitBooking } from '../../types/booking';
 import { LanguageCode } from '../../types/lead';
@@ -14,15 +23,71 @@ import { useFactSheetStore } from '../../store/useFactSheetStore';
 import { SlotPickerModal } from './SlotPickerModal';
 import { BookingPasscard } from './BookingPasscard';
 import { TRANSLATIONS } from '../../data/translations';
+import { sounds } from '../../utils/soundEffects';
 
 interface BuyerChatWidgetProps {
   currentProject: ProjectId;
   language: LanguageCode;
+  onOpenEmiModal?: () => void;
+  onOpenFloorPlans?: () => void;
+}
+
+// Persona demo data
+const PERSONAS = [
+  {
+    name: 'Hardik Patel',
+    id: 'LD-58210',
+    source: 'Portal',
+    letter: 'H',
+    query: 'Looking for 3 BHK flat on S.G. Highway.',
+    avatarBg: 'bg-indigo-100 text-indigo-700',
+    sourceBg: 'bg-indigo-50 text-indigo-600 border-indigo-200',
+  },
+  {
+    name: 'Nidhi Shah',
+    id: 'LD-58211',
+    source: 'Social Ad',
+    letter: 'N',
+    query: 'Can I know 2 BHK price in Shela and amenities?',
+    avatarBg: 'bg-pink-100 text-pink-700',
+    sourceBg: 'bg-pink-50 text-pink-600 border-pink-200',
+  },
+  {
+    name: 'Kavita Joshi',
+    id: 'LD-58224',
+    source: 'Hoarding',
+    letter: 'K',
+    query: 'Saw the hoarding on SP Ring Road. Tell me location.',
+    avatarBg: 'bg-amber-100 text-amber-700',
+    sourceBg: 'bg-amber-50 text-amber-600 border-amber-200',
+  },
+  {
+    name: 'Hitesh Prajapati',
+    id: 'LD-DEMO-GUJ',
+    source: 'Ahmedabad Walk-in',
+    letter: 'હિ',
+    query: '3 BHK નું કારપેટ એરિયા અને AUDA મંજૂરી શું છે?',
+    avatarBg: 'bg-emerald-100 text-emerald-800',
+    sourceBg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  },
+];
+
+// Formats AI message text: bolds **text** patterns
+function formatMessageText(text: string): React.ReactNode {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i} className="font-bold text-[#111418]">{part.slice(2, -2)}</strong>;
+    }
+    return <span key={i}>{part}</span>;
+  });
 }
 
 export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
   currentProject,
   language,
+  onOpenEmiModal,
+  onOpenFloorPlans,
 }) => {
   const { messages, isTyping, sendMessage, resetChat } = useChatStore();
   const { slots, holdSlot, bookSiteVisit } = useBookingStore();
@@ -34,294 +99,575 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
   const [isSlotModalOpen, setIsSlotModalOpen] = useState(false);
   const [latestBooking, setLatestBooking] = useState<SiteVisitBooking | null>(null);
   const [showPersonas, setShowPersonas] = useState(false);
+  const [activePersona, setActivePersona] = useState<string | null>(null);
+  const [isListening, setIsListening] = useState(false);
+  const [speechError, setSpeechError] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<unknown>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
+  // Play sound when AI finishes typing
+  const prevTypingRef = useRef(isTyping);
+  useEffect(() => {
+    if (prevTypingRef.current && !isTyping && messages.length > 0) {
+      sounds.playReceived();
+    }
+    prevTypingRef.current = isTyping;
+  }, [isTyping, messages.length]);
+
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!inputQuery.trim()) return;
-
+    if (!inputQuery.trim() || isTyping) return;
     const query = inputQuery;
     setInputQuery('');
-    const res = await sendMessage(query, currentFact);
-
-    if (res?.shouldPromptBookingModal && !latestBooking) {
-      // Suggest opening slot modal
-    }
+    sounds.playSent();
+    await sendMessage(query, currentFact);
   };
 
   const handleQuickChip = async (chipText: string) => {
+    sounds.playClick();
     if (chipText === t.quickQuestions.bookVisit) {
       setIsSlotModalOpen(true);
       return;
     }
+    sounds.playSent();
     await sendMessage(chipText, currentFact);
   };
 
-  const handlePersonaSelect = async (name: string, sampleId: string, query: string) => {
-    await sendMessage(`Hi, this is ${name} (${sampleId}). ${query}`, currentFact);
+  const handlePersonaSelect = async (persona: typeof PERSONAS[0]) => {
+    sounds.playClick();
+    setActivePersona(persona.id);
+    setShowPersonas(false);
+    sounds.playSent();
+    await sendMessage(`Hi, this is ${persona.name} (${persona.id}). ${persona.query}`, currentFact);
+    setTimeout(() => setActivePersona(null), 2000);
   };
 
+  // Web Speech API Voice Dictation
+  const toggleSpeechRecognition = () => {
+    sounds.playClick();
+    const windowWithSpeech = window as unknown as {
+      webkitSpeechRecognition?: any;
+      SpeechRecognition?: any;
+    };
+    const SpeechRec = windowWithSpeech.SpeechRecognition || windowWithSpeech.webkitSpeechRecognition;
+
+    if (!SpeechRec) {
+      setSpeechError('Voice dictation is not supported in this browser. Please type.');
+      setTimeout(() => setSpeechError(null), 4000);
+      return;
+    }
+
+    if (isListening && recognitionRef.current) {
+      try {
+        (recognitionRef.current as any).stop();
+      } catch {}
+      setIsListening(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRec();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = language === 'gu' ? 'gu-IN' : language === 'hi' ? 'hi-IN' : 'en-IN';
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        setSpeechError(null);
+      };
+
+      recognition.onresult = (event: any) => {
+        const transcript = Array.from(event.results)
+          .map((result: any) => result[0].transcript)
+          .join('');
+        setInputQuery(transcript);
+      };
+
+      recognition.onerror = (err: any) => {
+        setIsListening(false);
+        if (err.error !== 'no-speech') {
+          setSpeechError(`Voice error: ${err.error || 'permission denied'}`);
+          setTimeout(() => setSpeechError(null), 4000);
+        }
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch {
+      setIsListening(false);
+      setSpeechError('Could not start voice recognition.');
+      setTimeout(() => setSpeechError(null), 4000);
+    }
+  };
+
+  const isEmpty = messages.length === 0 && !latestBooking;
+
   return (
-    <div className="flex flex-col h-[calc(100dvh-7.8rem)] sm:h-[calc(100vh-8.5rem)] max-w-4xl mx-auto bg-white rounded-xl sm:rounded-2xl border border-[#E6E4DF] shadow-lg overflow-hidden my-1 sm:my-4 transition-all">
-      {/* Official Sample Lead Persona Quick-Tester */}
-      <div className="bg-[#1A1E24] text-gray-300 px-3 sm:px-4 py-2 text-xs border-b border-[#2A3038]">
-        <div className="flex items-center justify-between gap-2">
+    <div className="flex flex-col h-[calc(100dvh-8rem)] sm:h-[calc(100vh-9rem)] max-w-4xl mx-auto bg-white rounded-2xl border border-[#E6E4DF] shadow-xl overflow-hidden my-1 sm:my-3 transition-all">
+
+      {/* ── Demo Persona Tester ─────────────────────────────────────── */}
+      <div className="bg-[#1A1E24] text-gray-300 border-b border-[#2A3038]">
+        <div className="px-4 py-2 flex items-center justify-between">
           <button
-            onClick={() => setShowPersonas(!showPersonas)}
-            className="text-[11px] font-bold text-[#C5A059] uppercase tracking-wider flex items-center gap-1.5 hover:underline cursor-pointer"
+            onClick={() => {
+              sounds.playClick();
+              setShowPersonas(!showPersonas);
+            }}
+            className="flex items-center gap-1.5 text-[11px] font-bold text-[#C5A059] uppercase tracking-wider hover:text-[#E0B96A] transition-colors"
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Sample Persona Tester {showPersonas ? '▴' : '▾'}</span>
+            <Sparkles className="w-3 h-3" />
+            Try a Demo Persona
+            <span className={`transition-transform duration-200 ${showPersonas ? 'rotate-180' : ''}`}>▾</span>
           </button>
-          <span className="text-[10px] text-gray-400 hidden sm:inline">Ground truth records from problem statement</span>
+          <span className="text-[10px] text-gray-400 hidden sm:block">
+            Pre-configured client test inquiries
+          </span>
         </div>
 
-        {/* Collapsible / responsive persona chips */}
-        {(showPersonas || typeof window !== 'undefined' && window.innerWidth >= 640) && (
-          <div className="flex items-center gap-1.5 overflow-x-auto pt-2 pb-0.5 no-scrollbar">
-            <button
-              onClick={() => handlePersonaSelect('Hardik Patel', 'LD-58210', 'Looking for 3 BHK flat on S.G. Highway.')}
-              className="px-2.5 py-1 rounded-lg bg-[#2A3038] hover:bg-[#C5A059] hover:text-[#111418] text-white text-[11px] font-medium transition-colors whitespace-nowrap cursor-pointer shrink-0"
-            >
-              Hardik Patel (LD-58210 • Portal)
-            </button>
-            <button
-              onClick={() => handlePersonaSelect('Nidhi Shah', 'LD-58211', 'Can I know 2 BHK price in Shela and amenities?')}
-              className="px-2.5 py-1 rounded-lg bg-[#2A3038] hover:bg-[#C5A059] hover:text-[#111418] text-white text-[11px] font-medium transition-colors whitespace-nowrap cursor-pointer shrink-0"
-            >
-              Nidhi Shah (LD-58211 • Social Ad)
-            </button>
-            <button
-              onClick={() => handlePersonaSelect('Kavita Joshi', 'LD-58224', 'Saw the hoarding on SP Ring Road. Tell me location.')}
-              className="px-2.5 py-1 rounded-lg bg-[#2A3038] hover:bg-[#C5A059] hover:text-[#111418] text-white text-[11px] font-medium transition-colors whitespace-nowrap cursor-pointer shrink-0"
-            >
-              Kavita Joshi (LD-58224 • Hoarding)
-            </button>
+        {/* Collapsible persona chips */}
+        <div className={`overflow-hidden transition-all duration-300 ease-out ${showPersonas ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0'}`}>
+          <div className="flex items-center gap-2 px-4 pb-2 overflow-x-auto no-scrollbar">
+            {PERSONAS.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => handlePersonaSelect(p)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all whitespace-nowrap flex-shrink-0 group btn-ripple ${
+                  activePersona === p.id
+                    ? 'bg-[#C5A059]/20 border-[#C5A059]/50 text-[#C5A059]'
+                    : 'bg-[#2A3038] border-[#3A4048] hover:border-[#C5A059]/40 hover:bg-[#C5A059]/10'
+                }`}
+              >
+                <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0 ${p.avatarBg}`}>
+                  {p.letter}
+                </span>
+                <span className="text-[11px] font-semibold text-white group-hover:text-[#C5A059] transition-colors">{p.name}</span>
+                <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full border ${p.sourceBg}`}>{p.source}</span>
+              </button>
+            ))}
           </div>
-        )}
+        </div>
       </div>
 
-      {/* Concierge Status Bar */}
-      <div className="bg-[#111418] text-white px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between border-b border-[#2A3038]">
-        <div className="flex items-center gap-2.5 sm:gap-3">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#1A1E24] border border-[#C5A059]/40 flex items-center justify-center text-[#C5A059] shrink-0">
-            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
+      {/* ── Concierge Status Bar ───────────────────────────────────── */}
+      <div className="bg-gradient-to-r from-[#111418] to-[#1A1E24] text-white px-4 sm:px-6 py-3 flex items-center justify-between border-b border-[#2A3038] flex-shrink-0">
+        <div className="flex items-center gap-3">
+          {/* AI Avatar */}
+          <div className="relative">
+            <div className="w-10 h-10 rounded-full bg-[#111418] border-2 border-[#C5A059]/50 flex items-center justify-center shrink-0 shadow-lg">
+              <span className="shimmer-text text-sm font-serif font-bold">A</span>
+            </div>
+            {/* Online dot */}
+            <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#111418]">
+              <span className="absolute inset-0 rounded-full bg-emerald-400 status-ping" />
+            </span>
           </div>
           <div>
-            <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="flex items-center gap-2">
               <h2 className="font-serif font-bold text-sm sm:text-base text-white leading-tight">
                 {currentFact.commercialName}
               </h2>
-              <span className="text-[9px] sm:text-[10px] bg-[#C5A059]/20 text-[#C5A059] font-mono px-2 py-0.5 rounded-full border border-[#C5A059]/30">
+              <span className="text-[9px] bg-[#C5A059]/20 text-[#C5A059] font-mono px-2 py-0.5 rounded-full border border-[#C5A059]/30">
                 AI Concierge
               </span>
             </div>
-            <p className="text-[11px] sm:text-xs text-gray-400 truncate max-w-[200px] sm:max-w-md">
+            <p className="text-[11px] text-gray-400 mt-0.5 truncate max-w-[180px] sm:max-w-sm">
               {currentFact.tagline}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Floor plans quick trigger */}
+          {onOpenFloorPlans && (
+            <button
+              onClick={() => {
+                sounds.playClick();
+                onOpenFloorPlans();
+              }}
+              className="hidden md:flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-[#2A3038] hover:bg-[#3A4048] text-gray-300 hover:text-white transition-colors border border-[#3A4048]"
+              title="View Architectural Floor Plans"
+            >
+              <Compass className="w-3.5 h-3.5 text-[#C5A059]" />
+              <span>Floor Plans</span>
+            </button>
+          )}
+
+          {/* EMI calculator quick trigger */}
+          {onOpenEmiModal && (
+            <button
+              onClick={() => {
+                sounds.playClick();
+                onOpenEmiModal();
+              }}
+              className="hidden md:flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-[#2A3038] hover:bg-[#3A4048] text-gray-300 hover:text-white transition-colors border border-[#3A4048]"
+              title="Gujarat Stamp Duty & EMI Estimator"
+            >
+              <Calculator className="w-3.5 h-3.5 text-indigo-400" />
+              <span>EMI</span>
+            </button>
+          )}
+
+          {/* Book Visit CTA */}
           <button
-            onClick={() => setIsSlotModalOpen(true)}
-            className="flex items-center gap-1.5 bg-[#C5A059] hover:bg-[#A37F38] text-[#111418] font-bold text-xs px-3 sm:px-3.5 py-1.5 rounded-xl shadow-xs transition-colors cursor-pointer"
+            onClick={() => {
+              sounds.playClick();
+              setIsSlotModalOpen(true);
+            }}
+            className="flex items-center gap-1.5 bg-[#C5A059] hover:bg-[#B8904F] text-[#111418] font-bold text-xs px-3 py-2 rounded-xl shadow-sm transition-all hover:scale-[1.03] active:scale-95 glow-bronze btn-ripple"
           >
             <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
             <span className="hidden sm:inline">Book Visit</span>
             <span className="sm:hidden">Book</span>
           </button>
 
+          {/* Reset chat */}
           <button
-            onClick={resetChat}
-            className="text-xs text-gray-400 hover:text-white px-2 py-1 rounded transition-colors cursor-pointer"
+            onClick={() => {
+              sounds.playClick();
+              resetChat();
+            }}
+            className="p-2 rounded-lg text-gray-500 hover:text-gray-200 hover:bg-white/10 transition-colors"
+            title="Reset conversation"
+            aria-label="Reset chat"
           >
-            Clear
+            <RotateCcw className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
-      {/* Chat Messages Stream */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-[#F8F7F4]/60">
-        {/* Active Booking Passcard if created */}
-        {latestBooking && (
-          <BookingPasscard
-            booking={latestBooking}
-            language={language}
-            onDismiss={() => setLatestBooking(null)}
-          />
-        )}
+      {/* ── Messages Stream ─────────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto bg-[#F8F7F4]/70 relative">
 
-        {messages.map((msg) => {
-          const isUser = msg.sender === 'user';
-
-          return (
+        {/* Empty State */}
+        {isEmpty && (
+          <div className="flex flex-col items-center justify-center h-full text-center px-6 py-10 space-y-6 relative">
             <div
-              key={msg.id}
-              className={`flex items-end gap-2.5 animate-msg-in ${isUser ? 'justify-end' : 'justify-start'}`}
-            >
-              {!isUser && (
-                <div className="w-8 h-8 rounded-full bg-[#111418] text-[#C5A059] flex items-center justify-center shrink-0 mb-1 font-bold text-xs shadow-xs">
-                  A
-                </div>
-              )}
+              className="absolute inset-0 pointer-events-none opacity-[0.035]"
+              style={{ backgroundImage: 'radial-gradient(#111418 1px, transparent 1px)', backgroundSize: '22px 22px' }}
+            />
 
-              <div
-                className={`max-w-[85%] sm:max-w-[75%] rounded-2xl p-4 text-xs sm:text-sm leading-relaxed ${
-                  isUser
-                    ? 'bg-[#111418] text-white rounded-br-xs shadow-md'
-                    : 'bg-white text-[#181A1D] border border-[#E6E4DF] rounded-bl-xs shadow-xs'
-                }`}
-              >
-                <p className="whitespace-pre-line">{msg.text}</p>
-
-                {/* Flagged Note Indicator (for transparency in demo) */}
-                {msg.isFlaggedForAudit && (
-                  <div className="mt-2.5 pt-2 border-t border-amber-200 text-[11px] text-amber-800 flex items-center gap-1.5 bg-amber-50 p-2 rounded-lg">
-                    <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                    <span>
-                      <strong>Handover Triggered:</strong> A senior sales advisor has been notified with
-                      this chat transcript.
-                    </span>
-                  </div>
-                )}
-
-                {/* Quick Booking CTA Button inside assistant bubble */}
-                {!isUser && msg.detectedIntent === 'ASK_PRICE' && (
-                  <div className="mt-3 pt-2 border-t border-[#E6E4DF] flex justify-end">
-                    <button
-                      onClick={() => setIsSlotModalOpen(true)}
-                      className="inline-flex items-center gap-1.5 bg-[#FBF7EE] border border-[#C5A059]/40 text-[#735722] hover:bg-[#C5A059] hover:text-[#111418] text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
-                    >
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>Reserve Site Visit Slot</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </button>
-                  </div>
-                )}
-
-                <div
-                  className={`text-[10px] mt-1 text-right ${
-                    isUser ? 'text-gray-400' : 'text-gray-400'
-                  }`}
-                >
-                  {new Date(msg.timestamp).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </div>
+            {/* Floating AI avatar */}
+            <div className="relative animate-float z-10">
+              <div className="absolute -inset-3 rounded-full border-2 border-[#C5A059]/30 animate-pulse-glow" />
+              <div className="w-20 h-20 rounded-full bg-[#111418] border-2 border-[#C5A059]/60 flex items-center justify-center shadow-2xl">
+                <span className="shimmer-text text-4xl font-serif font-bold">A</span>
               </div>
+              <span className="absolute bottom-0.5 right-0.5 w-5 h-5 rounded-full bg-emerald-500 border-2 border-[#F8F7F4] flex items-center justify-center">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-300 animate-pulse" />
+              </span>
             </div>
-          );
-        })}
 
-        {/* Real-time Typing Bubble */}
-        {isTyping && (
-          <div className="flex items-center gap-2 text-gray-500 text-xs">
-            <div className="w-8 h-8 rounded-full bg-[#111418] text-[#C5A059] flex items-center justify-center shrink-0">
-              <Sparkles className="w-4 h-4 animate-spin" />
+            {/* Headline */}
+            <div className="z-10 space-y-2">
+              <h3 className="font-serif text-2xl font-bold text-[#111418]">Your property concierge</h3>
+              <p className="text-sm text-gray-500 max-w-xs leading-relaxed">
+                Ask anything about <strong className="text-[#111418]">{currentFact.commercialName}</strong> — pricing, amenities, availability, or book a site visit.
+              </p>
             </div>
-            <div className="bg-white border border-[#E6E4DF] px-4 py-2.5 rounded-2xl rounded-bl-xs flex items-center gap-1.5 shadow-xs">
-              <span className="w-1.5 h-1.5 bg-[#C5A059] rounded-full animate-bounce"></span>
-              <span className="w-1.5 h-1.5 bg-[#C5A059] rounded-full animate-bounce [animation-delay:0.2s]"></span>
-              <span className="w-1.5 h-1.5 bg-[#C5A059] rounded-full animate-bounce [animation-delay:0.4s]"></span>
+
+            {/* Feature pills */}
+            <div className="flex flex-wrap items-center gap-2 justify-center z-10">
+              {[
+                { icon: <Zap className="w-3 h-3" />, text: '18s response SLA' },
+                { icon: <Home className="w-3 h-3" />, text: '420 Units · Ahmedabad' },
+                { icon: <Globe className="w-3 h-3" />, text: 'EN · हिंदी · ગુજરાતી' },
+              ].map((pill) => (
+                <span
+                  key={pill.text}
+                  className="flex items-center gap-1.5 bg-white border border-[#E6E4DF] rounded-full px-3.5 py-1.5 text-xs font-semibold text-[#111418] shadow-sm"
+                >
+                  <span className="text-[#C5A059]">{pill.icon}</span>
+                  {pill.text}
+                </span>
+              ))}
             </div>
+
+            <p className="text-[11px] text-gray-400 z-10 animate-pulse">
+              ↓ Choose a quick question, speak via mic, or type below
+            </p>
           </div>
         )}
 
-        <div ref={messagesEndRef} />
+        {/* Message list */}
+        <div className="p-4 sm:p-6 space-y-4">
+          {/* Active Booking Passcard */}
+          {latestBooking && (
+            <BookingPasscard
+              booking={latestBooking}
+              language={language}
+              onDismiss={() => setLatestBooking(null)}
+            />
+          )}
+
+          {messages.map((msg, idx) => {
+            const isUser = msg.sender === 'user';
+            return (
+              <div
+                key={msg.id}
+                className={`flex items-end gap-2.5 animate-msg-in ${isUser ? 'justify-end' : 'justify-start'}`}
+                style={{ animationDelay: `${Math.min(idx * 20, 100)}ms` }}
+              >
+                {/* AI avatar */}
+                {!isUser && (
+                  <div className="w-8 h-8 rounded-full bg-[#111418] text-[#C5A059] flex items-center justify-center shrink-0 mb-1 font-serif font-bold text-xs shadow-sm border border-[#C5A059]/30">
+                    A
+                  </div>
+                )}
+
+                <div className="group max-w-[88%] sm:max-w-[78%]">
+                  {/* Message bubble */}
+                  <div
+                    className={`rounded-2xl px-4 py-3 text-xs sm:text-sm leading-relaxed relative ${
+                      isUser
+                        ? 'bg-gradient-to-br from-[#111418] to-[#1C2128] text-white rounded-br-sm shadow-md'
+                        : 'bg-white text-[#181A1D] border border-[#E6E4DF] rounded-bl-sm shadow-sm border-l-[3px] border-l-[#C5A059]/50'
+                    }`}
+                  >
+                    <p className="whitespace-pre-line">
+                      {isUser ? msg.text : formatMessageText(msg.text)}
+                    </p>
+
+                    {/* Flagged / Handover alert */}
+                    {msg.isFlaggedForAudit && (
+                      <div className="mt-3 pt-2 border-t border-amber-200 text-[11px] text-amber-800 flex items-start gap-1.5 bg-amber-50 -mx-4 -mb-3 px-4 pb-3 rounded-b-2xl">
+                        <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                        <span>
+                          <strong>Senior Advisor Notified.</strong> Handover ticket created for your designated sales advisor.
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Interactive Action Pills inside AI bubble */}
+                    {!isUser && (
+                      <div className="mt-3 pt-2.5 border-t border-[#F0EDE8] flex flex-wrap items-center gap-2">
+                        {/* Book Visit CTA for Price/Visit Intent */}
+                        {(msg.detectedIntent === 'ASK_PRICE' || msg.detectedIntent === 'REQUEST_VISIT') && (
+                          <button
+                            onClick={() => {
+                              sounds.playClick();
+                              setIsSlotModalOpen(true);
+                            }}
+                            className="flex items-center gap-1.5 bg-gradient-to-r from-[#C5A059] to-[#A37F38] hover:brightness-105 text-[#111418] text-xs font-bold px-3 py-1.5 rounded-xl transition-all shadow-xs hover:scale-[1.01] active:scale-[0.99] btn-ripple"
+                          >
+                            <Calendar className="w-3.5 h-3.5" />
+                            <span>Reserve Visit Slot</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </button>
+                        )}
+
+                        {/* EMI Calculator CTA when discussing pricing */}
+                        {(msg.detectedIntent === 'ASK_PRICE' || msg.detectedIntent === 'ASK_DISCOUNT') && onOpenEmiModal && (
+                          <button
+                            onClick={() => {
+                              sounds.playClick();
+                              onOpenEmiModal();
+                            }}
+                            className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 transition-colors"
+                          >
+                            <Calculator className="w-3 h-3" />
+                            <span>Calculate Monthly EMI</span>
+                          </button>
+                        )}
+
+                        {/* Floor Plans CTA when discussing configuration or amenities */}
+                        {(msg.detectedIntent === 'ASK_AMENITIES' || msg.detectedIntent === 'ASK_PROJECT_SPECS') && onOpenFloorPlans && (
+                          <button
+                            onClick={() => {
+                              sounds.playClick();
+                              onOpenFloorPlans();
+                            }}
+                            className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-xl bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200 transition-colors"
+                          >
+                            <Compass className="w-3 h-3 text-[#C5A059]" />
+                            <span>View Unit Floor Plans</span>
+                          </button>
+                        )}
+
+                        {/* Map Directions Link */}
+                        <a
+                          href={`https://maps.google.com/?q=${currentFact.location.coordinates.lat},${currentFact.location.coordinates.lng}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-xl bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200 transition-colors"
+                        >
+                          <MapPin className="w-3 h-3 text-red-500" />
+                          <span>Ahmedabad GPS Pin</span>
+                          <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+                        </a>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Timestamp + read receipt */}
+                  <div className={`flex items-center gap-1 mt-1 px-1 ${isUser ? 'justify-end' : 'justify-start'}`}>
+                    <span className="text-[10px] text-gray-400">
+                      {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                    {isUser && (
+                      <span className="text-[10px] text-[#C5A059] font-bold tracking-tight">✓✓</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* User avatar initial */}
+                {isUser && (
+                  <div className="w-8 h-8 rounded-full bg-[#3E54AC] text-white flex items-center justify-center shrink-0 mb-1 font-bold text-xs shadow-sm flex-shrink-0">
+                    U
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Typing indicator */}
+          {isTyping && (
+            <div className="flex items-end gap-2.5 animate-msg-in">
+              <div className="w-8 h-8 rounded-full bg-[#111418] text-[#C5A059] flex items-center justify-center shrink-0 font-serif font-bold text-xs border border-[#C5A059]/30">
+                A
+              </div>
+              <div className="bg-white border border-[#E6E4DF] border-l-[3px] border-l-[#C5A059]/50 px-5 py-3 rounded-2xl rounded-bl-sm shadow-sm relative overflow-hidden">
+                <div className="absolute inset-0 animate-shimmer pointer-events-none opacity-50" />
+                <div className="flex items-center gap-1.5 relative z-10">
+                  <span className="w-2 h-2 bg-[#C5A059] rounded-full typing-dot" />
+                  <span className="w-2 h-2 bg-[#C5A059] rounded-full typing-dot" />
+                  <span className="w-2 h-2 bg-[#C5A059] rounded-full typing-dot" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
-      {/* Quick Action Chips Bar */}
-      <div className="p-2 sm:px-4 bg-white border-t border-[#E6E4DF] overflow-x-auto flex gap-2 no-scrollbar">
-        <button
-          onClick={() => handleQuickChip(t.quickQuestions.bookVisit)}
-          className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-bold bg-[#111418] text-white hover:bg-[#2A3038] flex items-center gap-1.5 shadow-xs transition-colors shrink-0"
-        >
-          <Calendar className="w-3.5 h-3.5 text-[#C5A059]" />
-          <span>{t.quickQuestions.bookVisit}</span>
-        </button>
+      {/* ── Quick Action Chip Bar ────────────────────────────────────── */}
+      <div className="relative bg-white border-t border-[#E6E4DF] flex-shrink-0">
+        <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white to-transparent pointer-events-none z-10" />
+        <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white to-transparent pointer-events-none z-10" />
 
-        <button
-          onClick={() => handleQuickChip('Compare Project 1 vs Project 2')}
-          className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold bg-[#FBF7EE] text-[#735722] hover:bg-[#C5A059] hover:text-[#111418] border border-[#C5A059]/40 transition-colors shrink-0 flex items-center gap-1"
-        >
-          <Sparkles className="w-3 h-3 text-[#C5A059]" />
-          <span>Compare Both Projects</span>
-        </button>
+        <div className="px-2 sm:px-4 py-2 overflow-x-auto flex gap-2 no-scrollbar">
+          {/* Primary CTA chip */}
+          <button
+            onClick={() => handleQuickChip(t.quickQuestions.bookVisit)}
+            className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-bold bg-[#111418] text-white hover:bg-[#2A3038] flex items-center gap-1.5 shadow-sm transition-all shrink-0 btn-ripple"
+          >
+            <Calendar className="w-3.5 h-3.5 text-[#C5A059]" />
+            {t.quickQuestions.bookVisit}
+          </button>
 
-        <button
-          onClick={() => handleQuickChip(t.quickQuestions.price)}
-          className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium bg-[#F8F7F4] hover:bg-[#F1EFEA] text-gray-800 border border-[#E6E4DF] transition-colors shrink-0"
-        >
-          {t.quickQuestions.price}
-        </button>
+          <button
+            onClick={() => handleQuickChip('Compare Project 1 vs Project 2')}
+            className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold bg-[#FBF7EE] text-[#735722] hover:bg-[#C5A059] hover:text-[#111418] border border-[#C5A059]/40 transition-all shrink-0 flex items-center gap-1 btn-ripple"
+          >
+            <Sparkles className="w-3 h-3" />
+            Compare Projects
+          </button>
 
-        <button
-          onClick={() => handleQuickChip(t.quickQuestions.amenities)}
-          className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium bg-[#F8F7F4] hover:bg-[#F1EFEA] text-gray-800 border border-[#E6E4DF] transition-colors shrink-0"
-        >
-          {t.quickQuestions.amenities}
-        </button>
+          {[
+            t.quickQuestions.price,
+            t.quickQuestions.amenities,
+            t.quickQuestions.location,
+            t.quickQuestions.possession,
+          ].map((chip) => (
+            <button
+              key={chip}
+              onClick={() => handleQuickChip(chip)}
+              className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium bg-[#F8F7F4] hover:bg-[#ECEAE5] text-gray-700 border border-[#E6E4DF] transition-all shrink-0"
+            >
+              {chip}
+            </button>
+          ))}
 
-        <button
-          onClick={() => handleQuickChip(t.quickQuestions.location)}
-          className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium bg-[#F8F7F4] hover:bg-[#F1EFEA] text-gray-800 border border-[#E6E4DF] transition-colors shrink-0"
-        >
-          {t.quickQuestions.location}
-        </button>
+          <button
+            onClick={() => handleQuickChip(t.quickQuestions.talkHuman)}
+            className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 transition-all shrink-0"
+          >
+            {t.quickQuestions.talkHuman}
+          </button>
 
-        <button
-          onClick={() => handleQuickChip(t.quickQuestions.possession)}
-          className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium bg-[#F8F7F4] hover:bg-[#F1EFEA] text-gray-800 border border-[#E6E4DF] transition-colors shrink-0"
-        >
-          {t.quickQuestions.possession}
-        </button>
-
-        <button
-          onClick={() => handleQuickChip(t.quickQuestions.talkHuman)}
-          className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 transition-colors shrink-0"
-        >
-          {t.quickQuestions.talkHuman}
-        </button>
-
-        <button
-          onClick={() => handleQuickChip('Stop contacting me — DPDP opt-out')}
-          className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 transition-colors shrink-0"
-        >
-          🚫 Opt-Out
-        </button>
+          <button
+            onClick={() => handleQuickChip('Stop contacting me — DPDP opt-out')}
+            className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 transition-all shrink-0"
+          >
+            🚫 DPDP Opt-Out
+          </button>
+        </div>
       </div>
 
-      {/* Input Message Form */}
-      <form onSubmit={handleSend} className="p-3 sm:p-4 bg-white border-t border-[#E6E4DF] flex items-center gap-2">
-        <input
-          type="text"
-          value={inputQuery}
-          onChange={(e) => setInputQuery(e.target.value)}
-          placeholder={t.inputPlaceholder}
-          className="flex-1 px-4 py-2.5 text-xs sm:text-sm bg-[#F8F7F4] border border-[#E6E4DF] rounded-xl focus:outline-none focus:ring-1 focus:ring-[#C5A059] focus:bg-white transition-all text-[#181A1D]"
-        />
+      {/* Speech error indicator */}
+      {speechError && (
+        <div className="bg-amber-50 px-4 py-1.5 text-xs text-amber-800 border-t border-amber-200 flex items-center gap-1.5">
+          <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+          <span>{speechError}</span>
+        </div>
+      )}
+
+      {/* ── Input Form ──────────────────────────────────────────────── */}
+      <form
+        onSubmit={handleSend}
+        className="px-3 sm:px-4 py-3 bg-white border-t border-[#E6E4DF] flex items-center gap-2 flex-shrink-0"
+      >
+        {/* Active Speech Recognition Toggle */}
+        <button
+          type="button"
+          onClick={toggleSpeechRecognition}
+          className={`p-2.5 rounded-xl transition-all flex-shrink-0 ${
+            isListening
+              ? 'bg-rose-500 text-white animate-pulse shadow-md ring-2 ring-rose-300'
+              : 'text-gray-400 hover:text-[#C5A059] hover:bg-[#FBF7EE]'
+          }`}
+          title={isListening ? 'Listening... click to stop' : 'Voice input (Web Speech API)'}
+          aria-label={isListening ? 'Stop listening' : 'Start voice input'}
+        >
+          {isListening ? <Mic className="w-4 h-4 animate-bounce" /> : <Mic className="w-4 h-4" />}
+        </button>
+
+        <div className="flex-1 relative">
+          <input
+            ref={inputRef}
+            type="text"
+            value={inputQuery}
+            onChange={(e) => setInputQuery(e.target.value)}
+            placeholder={isListening ? 'Listening to speech...' : t.inputPlaceholder}
+            disabled={isTyping}
+            className={`w-full px-4 py-2.5 text-xs sm:text-sm bg-[#F8F7F4] border rounded-xl focus:outline-none transition-all text-[#181A1D] disabled:opacity-50 placeholder:text-gray-400 ${
+              isListening
+                ? 'border-rose-400 ring-2 ring-rose-100 bg-rose-50/20'
+                : 'border-[#E6E4DF] focus:ring-2 focus:ring-[#C5A059]/50 focus:border-[#C5A059] focus:bg-white'
+            }`}
+          />
+          {inputQuery.length > 100 && (
+            <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono tabular-nums ${inputQuery.length > 500 ? 'text-rose-500' : 'text-gray-400'}`}>
+              {inputQuery.length}
+            </span>
+          )}
+        </div>
 
         <button
           type="submit"
           disabled={!inputQuery.trim() || isTyping}
-          className={`p-2.5 rounded-xl font-bold transition-all shadow-xs ${
+          className={`p-2.5 sm:p-3 rounded-xl font-bold transition-all shadow-sm flex-shrink-0 ${
             inputQuery.trim() && !isTyping
-              ? 'bg-[#111418] hover:bg-[#2A3038] text-[#C5A059] hover:scale-105 active:scale-95'
-              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              ? 'bg-[#111418] hover:bg-[#2A3038] text-[#C5A059] hover:scale-110 active:scale-95 shadow-md btn-ripple'
+              : 'bg-gray-100 text-gray-300 cursor-not-allowed'
           }`}
+          aria-label="Send message"
         >
           <Send className="w-4 h-4" />
         </button>
       </form>
 
-      {/* Slot Selection Modal */}
+      {/* ── Slot Selection Modal ─────────────────────────────────────── */}
       <SlotPickerModal
         isOpen={isSlotModalOpen}
         onClose={() => setIsSlotModalOpen(false)}
@@ -332,13 +678,14 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
         onConfirmBooking={(slotId, leadId, name, phone, proj, config) => {
           const res = bookSiteVisit(slotId, leadId, name, phone, proj, config);
           if (res.success && res.booking) {
+            sounds.playSuccess();
             setLatestBooking(res.booking);
+          } else {
+            sounds.playAlert();
           }
           return res;
         }}
-        onBookingSuccess={() => {
-          setIsSlotModalOpen(false);
-        }}
+        onBookingSuccess={() => setIsSlotModalOpen(false)}
       />
     </div>
   );
