@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Header, AppView } from './components/layout/Header';
 import { ComplianceBanner } from './components/layout/ComplianceBanner';
+import { Footer } from './components/layout/Footer';
 import { BuyerChatWidget } from './components/buyer/BuyerChatWidget';
 import { UnifiedLeadList } from './components/admin/UnifiedLeadList';
 import { ExecutiveWorkspace } from './components/sales/ExecutiveWorkspace';
@@ -181,67 +182,12 @@ export const App: React.FC = () => {
         </button>
       )}
 
-      {/* Footer */}
-      <footer className="relative bg-[#111418] border-t border-[#2A3038] py-6 px-6 text-xs text-gray-400 mt-auto">
-        <div className="absolute -top-8 left-0 right-0 h-8 bg-gradient-to-b from-transparent to-[#111418] pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto space-y-4">
-          {/* Brand + badges row */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#1A1E24] border border-[#C5A059]/30 flex items-center justify-center flex-shrink-0">
-                <span className="shimmer-text font-bold text-sm font-serif">A</span>
-              </div>
-              <div>
-                <span className="font-bold text-white text-sm block">PropEase AI Concierge</span>
-                <span className="text-gray-500 text-[11px]">Company A · Ahmedabad · 420 Luxury Units · ₹65L – ₹1.2 Cr</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="bg-emerald-900/40 text-emerald-400 text-[10px] font-semibold px-2.5 py-1 rounded-full border border-emerald-800/50 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block" />
-                DPDP Act 2023
-              </span>
-              <span className="bg-[#1A1E24] text-[#C5A059] text-[10px] font-semibold px-2.5 py-1 rounded-full border border-[#C5A059]/30">
-                Zero Double-Booking
-              </span>
-              <span className="bg-[#1A1E24] text-gray-400 text-[10px] font-semibold px-2.5 py-1 rounded-full border border-[#2A3038]">
-                GujRERA Registered
-              </span>
-            </div>
-          </div>
-
-          {/* RERA numbers */}
-          <div className="border-t border-[#2A3038] pt-3 space-y-1">
-            <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold mb-1.5">GujRERA Registered Projects</p>
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-8 text-[11px]">
-              <span>
-                <span className="text-gray-500 font-semibold">The Grand Orchid (S.G. Highway): </span>
-                <code className="font-mono text-[#C5A059] select-all">PR/GJ/AHMEDABAD/AHMEDABAD-CITY/AUDA/RAA09876/010124</code>
-              </span>
-              <span>
-                <span className="text-gray-500 font-semibold">Orchid Heights (Shela): </span>
-                <code className="font-mono text-[#C5A059] select-all">PR/GJ/AHMEDABAD/SANAND/AUDA/RAA09877/010124</code>
-              </span>
-            </div>
-          </div>
-
-          {/* Legal disclaimer & Honest limits notes */}
-          <div className="text-[10px] text-gray-600 border-t border-[#2A3038] pt-3 leading-relaxed">
-            This platform is governed under the Real Estate (Regulation and Development) Act 2016 (RERA) and the Digital Personal Data Protection Act 2023 (DPDP). All promotional claims are limited to registered project details. Buyer data processed only with explicit prior consent. Opt-out honoured immediately.
-            <span className="block mt-1.5 text-gray-500">
-              <strong className="text-gray-400">Platform Limits &amp; Boundaries:</strong> AI responses are strictly grounded in the Sales Head&apos;s published fact sheet. Missing facts are deferred to human advisors and flagged for daily audit. Final prices, customized payment schedules, and allotment letters require certified sales head review.
-              <button
-                onClick={() => setCurrentView('factsheet-cms')}
-                className="text-[#C5A059] hover:underline font-semibold ml-1.5 inline-flex items-center gap-0.5"
-              >
-                <span>Read Full Technical Architecture &amp; Operational Boundaries</span>
-                <span>→</span>
-              </button>
-            </span>
-          </div>
-        </div>
-      </footer>
+      {/* Architectural Developer Footer */}
+      <Footer
+        currentView={currentView}
+        onViewChange={setCurrentView}
+        onOpenStressTest={() => setIsStressTestOpen(true)}
+      />
     </div>
   );
 };
