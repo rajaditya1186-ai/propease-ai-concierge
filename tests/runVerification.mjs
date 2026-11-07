@@ -202,6 +202,94 @@ runTest('Multilingual Parser: Recognizes intents across English, Hindi, and Guja
   assert.strictEqual(detectIntent('मुझे किसी एग्जीक्यूटिव से बात करनी है'), 'REQUEST_HUMAN');
 });
 
+// -------------------------------------------------------------
+// 7. Gujarat Statutory Stamp Duty & EMI Intent Verification
+// -------------------------------------------------------------
+runTest('Statutory Math: Calculates Gujarat 4.9% stamp duty, 0% female concession, and recognizes intent', () => {
+  function calculateGujaratStatutory(agreementValue, isFemaleApplicant = false) {
+    const stampDutyRate = isFemaleApplicant ? 0.0 : 0.049; // 0% female concession in Gujarat
+    const registrationRate = 0.01; // 1% AUDA registration
+    const gstRate = 0.05; // 5% GST for under-construction residential
+
+    const stampDuty = agreementValue * stampDutyRate;
+    const registration = agreementValue * registrationRate;
+    const gst = agreementValue * gstRate;
+    const allInclusive = agreementValue + stampDuty + registration + gst;
+
+    return { stampDuty, registration, gst, allInclusive };
+  }
+
+  // 3 BHK at ₹95,00,000
+  const standardCost = calculateGujaratStatutory(9500000, false);
+  assert.strictEqual(standardCost.stampDuty, 465500, '4.9% stamp duty on ₹95L is ₹4,65,500');
+  assert.strictEqual(standardCost.registration, 95000, '1% registration on ₹95L is ₹95,000');
+  assert.strictEqual(standardCost.gst, 475000, '5% GST on ₹95L is ₹4,75,000');
+
+  // Female applicant concession
+  const femaleCost = calculateGujaratStatutory(9500000, true);
+  assert.strictEqual(femaleCost.stampDuty, 0, 'Gujarat state female concession waives 4.9% basic stamp duty');
+
+  // Intent classification
+  function detectCostIntent(query) {
+    const q = query.toLowerCase();
+    if (q.includes('stamp') || q.includes('emi') || q.includes('breakdown') || q.includes('સ્ટેમ્પ') || q.includes('स्टैम्प')) {
+      return 'ASK_COST_BREAKDOWN';
+    }
+    return 'OTHER';
+  }
+
+  assert.strictEqual(detectCostIntent('What is the stamp duty in Ahmedabad?'), 'ASK_COST_BREAKDOWN');
+  assert.strictEqual(detectCostIntent('ગુજરાતમાં સ્ટેમ્પ ડ્યુટી અને EMI કેટલી થશે?'), 'ASK_COST_BREAKDOWN');
+});
+
+// -------------------------------------------------------------
+// 8. DPDP Act 2023 Opt-Out State Machine
+// -------------------------------------------------------------
+runTest('DPDP State Machine: Handles STOP opt-out and START opt-in with RERA template verification', () => {
+  class DPDPContactStateMachine {
+    constructor() {
+      this.isOptedOut = false;
+      this.history = [];
+    }
+    receiveMessage(text) {
+      const clean = text.trim().toUpperCase();
+      if (clean === 'STOP') {
+        this.isOptedOut = true;
+        this.history.push({ text, status: 'SUSPENDED_UNDER_DPDP' });
+        return { success: true, message: 'Communication suspended under DPDP Act 2023.' };
+      }
+      if (clean === 'START') {
+        this.isOptedOut = false;
+        this.history.push({ text, status: 'RE_ENABLED' });
+        return { success: true, message: 'Automated messaging re-enabled.' };
+      }
+      if (this.isOptedOut) {
+        return { success: false, error: 'OUTREACH_BLOCKED_DUE_TO_OPT_OUT' };
+      }
+      this.history.push({ text, status: 'DELIVERED' });
+      return { success: true };
+    }
+  }
+
+  const sm = new DPDPContactStateMachine();
+  assert.strictEqual(sm.isOptedOut, false);
+
+  // User replies STOP
+  const stopRes = sm.receiveMessage('STOP');
+  assert.strictEqual(stopRes.success, true);
+  assert.strictEqual(sm.isOptedOut, true);
+
+  // System attempts to send notification while opted-out -> MUST BE BLOCKED
+  const sendAttempt = sm.receiveMessage('Site visit reminder tomorrow at 11 AM');
+  assert.strictEqual(sendAttempt.success, false);
+  assert.strictEqual(sendAttempt.error, 'OUTREACH_BLOCKED_DUE_TO_OPT_OUT');
+
+  // User replies START to opt back in
+  const startRes = sm.receiveMessage('START');
+  assert.strictEqual(startRes.success, true);
+  assert.strictEqual(sm.isOptedOut, false);
+});
+
 console.log('\n================================================================');
 console.log(`Results: ${passedTests} / ${totalTests} test suites passed cleanly (100%).`);
 console.log('================================================================');

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Lead, LeadSource, LeadStatus } from '../types/lead';
 import { INITIAL_LEADS } from '../data/seedData';
 import { detectDuplicateLead, mergeDuplicateTouchpoint, normalizePhoneNumber } from '../services/deduplicationEngine';
@@ -124,17 +124,22 @@ export function useLeadStore() {
     localStorage.removeItem(STORAGE_KEY);
   };
 
-  // Filtered view
-  const filteredLeads = leads.filter((lead) => {
-    const matchesSource = selectedSource === 'All' || lead.source === selectedSource;
-    const matchesStatus = selectedStatus === 'All' || lead.status === selectedStatus;
-    const matchesSearch =
-      !searchQuery ||
-      lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      lead.phone.includes(searchQuery) ||
-      lead.id.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSource && matchesStatus && matchesSearch;
-  });
+  // Memoized filtered view for high search/filter rendering efficiency
+  const filteredLeads = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    return leads.filter((lead) => {
+      const matchesSource = selectedSource === 'All' || lead.source === selectedSource;
+      const matchesStatus = selectedStatus === 'All' || lead.status === selectedStatus;
+      if (!matchesSource || !matchesStatus) return false;
+      if (!q) return true;
+      return (
+        lead.name.toLowerCase().includes(q) ||
+        lead.phone.includes(q) ||
+        lead.id.toLowerCase().includes(q) ||
+        lead.configurationWanted.toLowerCase().includes(q)
+      );
+    });
+  }, [leads, selectedSource, selectedStatus, searchQuery]);
 
   return {
     leads,

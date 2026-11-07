@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Zap,
@@ -37,6 +37,15 @@ export const ConcurrencyStressTestModal: React.FC<ConcurrencyStressTestModalProp
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<TestAttemptResult[]>([]);
   const [testSummary, setTestSummary] = useState<string>('');
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isRunning) onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose, isRunning]);
 
   if (!isOpen) return null;
 
