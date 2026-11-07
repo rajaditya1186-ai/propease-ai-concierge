@@ -99,6 +99,23 @@ export function classifyUserIntent(query: string): UserIntent {
     return 'ASK_RERA';
   }
 
+  // 4b. Cost Sheet, Gujarat Stamp Duty & EMI Inquiries
+  if (
+    q.includes('stamp') ||
+    q.includes('emi') ||
+    q.includes('breakdown') ||
+    q.includes('tax') ||
+    q.includes('gst') ||
+    q.includes('all inclusive') ||
+    q.includes('registration fee') ||
+    q.includes('સ્ટેમ્પ') ||
+    q.includes('ઇએમઆઈ') ||
+    q.includes('स्टैम्प') ||
+    q.includes('ईएमआई')
+  ) {
+    return 'ASK_COST_BREAKDOWN';
+  }
+
   // 5. Price / Budget Inquiries
   if (
     q.includes('price') ||
@@ -274,6 +291,25 @@ export function generateGroundedResponse(
         responseText: reraText,
         detectedIntent: 'ASK_RERA',
         isFlaggedForAudit: false,
+      };
+    }
+
+    // 4b. Cost Sheet, Gujarat Stamp Duty & EMI Breakdown
+    case 'ASK_COST_BREAKDOWN': {
+      let costText = '';
+      if (language === 'gu') {
+        costText = `${factSheet.commercialName} માટે સત્તાવાર ખર્ચ વિગત (અમદાવાદ / ઔડા વિસ્તાર):\n\n• મૂળ કિંમત: ${factSheet.configurations.map((c) => `${c.type}: ${c.priceRange}`).join(', ')}\n• ગુજરાત સ્ટેમ્પ ડ્યુટી: 4.9% (મહિલા ખરીદનાર માટે મૂળ સ્ટેમ્પ ડ્યુટી 0% ની સરકારી છૂટ!)\n• નોંધણી ફી: 1.0%\n• જીએસટી: 5% (અંડર-કન્સ્ટ્રક્શન લક્ઝરી)\n• અંદાજિત હોમ લોન EMI: આશરે ₹725 પ્રતિ ₹1 લાખ (20 વર્ષ @ 8.5% વ્યાજ)\n\nવિગતવાર યુનિટ-વાઇઝ પેમેન્ટ પ્લાન મેળવવા માટે સાઇટ વિઝિટ બુક કરો.`;
+      } else if (language === 'hi') {
+        costText = `${factSheet.commercialName} के लिए आधिकारिक लागत विवरण (अहमदाबाद / औडा):\n\n• मूल समझौता मूल्य: ${factSheet.configurations.map((c) => `${c.type}: ${c.priceRange}`).join(', ')}\n• गुजरात स्टैम्प ड्यूटी: 4.9% (महिला खरीदार के लिए मूल स्टैम्प ड्यूटी 0% छूट!)\n• पंजीकरण शुल्क: 1.0%\n• जीएसटी: 5% (निर्माणाधीन)\n• अनुमानित होम लोन ईएमआई: लगभग ₹725 प्रति ₹1 लाख ऋण (20 वर्ष @ 8.5% ब्याज)\n\nयूनिट-वार विस्तृत लागत पत्रक के लिए साइट विजिट शेड्यूल करें।`;
+      } else {
+        costText = `Official Statutory Cost Breakdown for ${factSheet.commercialName} (Ahmedabad / AUDA limits):\n\n• Base Agreement Value: ${factSheet.configurations.map((c) => `${c.type}: ${c.priceRange}`).join(', ')}\n• Gujarat Stamp Duty: 4.9% basic (0% basic stamp duty incentive for female applicants!)\n• Registration Charges: 1.0%\n• GST: 5% (under-construction residential)\n• Estimated 20-Year Home Loan EMI: ~₹725 per ₹1 Lakh borrowed (@ 8.5% interest rate)\n\nWould you like to schedule an in-person site visit to review the exact unit cost sheet with your assigned advisor?`;
+      }
+
+      return {
+        responseText: costText,
+        detectedIntent: 'ASK_COST_BREAKDOWN',
+        isFlaggedForAudit: false,
+        shouldPromptBookingModal: true,
       };
     }
 

@@ -7,6 +7,7 @@ export type UserIntent =
   | 'GREETING'
   | 'ASK_PROJECT_SPECS'
   | 'ASK_PRICE'
+  | 'ASK_COST_BREAKDOWN'
   | 'ASK_LOCATION'
   | 'ASK_AMENITIES'
   | 'ASK_POSSESSION'

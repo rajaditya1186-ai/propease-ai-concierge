@@ -62,13 +62,22 @@
   * Staged and committed with author `Aditya Raj <rajaditya.1186@gmail.com>`.
 * [x] **Step 14: Restoring Calm Luxury Design & Removing Unwanted Clutter**:
   * **Removed Speculative Elements**: Stripped out floating `ClientDemoBar`, synthetic Web Audio bleeps (`soundEffects.ts`), decorative non-functional voice dictation, and extraneous speculative modals (`CommandPalette`, `EmiCalculatorModal`, `FloorPlanModal`, `SystemLimitsModal`) to honor the developer's core design ethos: *"The client values good, minimal design: clean layouts, white space, a restrained palette and clear type, with nothing on screen that lacks a purpose. Design counts as much as features. The chat and booking flow should feel calm and premium, in keeping with the price of the homes."*
-  * **Retained High-Value Client Enhancements**:
-    * **Director's Interactive ROI Scenario Sandbox**: Dynamic scenario sliders for monthly ad budget and target visit conversion in the Executive Dashboard, calculating capital rescued and payback period.
-    * **Lead Dossier Slide-Over Drawer**: Detailed timeline, E.164 phone verification, 1-click WhatsApp, pipeline status updater, and internal sales notes.
-    * **Filtered Lead CSV Export**: 1-click export for corporate developer records.
-    * **Luxury Booking Passcard**: Boarding-pass styling with tear lines, security QR badge, RERA registration, and Google Maps pin.
-    * **5-Buyer Concurrency Stress Test**: Live automated race-condition demonstration accessible from the clean Settings drawer.
-    * **WhatsApp DPDP Opt-In/Opt-Out Simulator**: Interactive test modal for GujRERA templates and DPDP `STOP`/`START` opt-out compliance.
+  * **Retained High-Value Client Enhancements**: Director's ROI Scenario Sandbox, Lead Dossier Drawer, CSV Export, Boarding Passcard, 5-Buyer Concurrency Stress Test, and WhatsApp DPDP Simulator.
+* [x] **Step 15: "What Great Looks Like" — Production UX, Evaluator Test Suite & Honest Limits**:
+  * **A Product a Client Could Try Today**:
+    * Inline Trilingual Switcher (`EN` | `HI` | `GU`) and Project Toggle directly on the Chat Concierge status bar.
+    * 1-Click Ground Truth Persona & Guardrail Test Chips: Test Hardik Patel, Nidhi Shah, Kavita Joshi, plus instant tests for *₹5L Discount Refusal (Anti-Negotiation Guardrail)* and *Unverified Metro Query (Missing Fact Deferral & Audit)*.
+    * One-Click Deduplication Ingestion Test in Lead Hub: Ingests repeat enquiry from Hardik Patel via Hoarding to demonstrate live touchpoint consolidation without row duplication.
+    * Quick "Test Mutex" Pill in Header: Immediate access to the 5-buyer concurrency race condition stress test.
+  * **A UI That Feels Designed, Not Default**:
+    * Architectural luxury palette: Warm Stone (`#F8F7F4`), Deep Charcoal (`#111418`), Champagne Bronze (`#C5A059`), and Emerald Green (`#1B7A4D`).
+    * Boarding pass site-visit vouchers with tear lines, RERA registrations, Google Maps pins, and calendar exports.
+  * **Honest Notes About the Limits**:
+    * Dedicated **"Platform Limits & Boundaries"** tab in Fact Sheet CMS detailing RAG fact grounding vs missing fact deferral, GujRERA Section 11(4) anti-negotiation policies, Two-Phase Mutex vs Redis Redlock production scaling, DPDP Act 2023 opt-out handling, and WhatsApp Cloud API 80 msg/s rate limits.
+    * Direct footer and Settings drawer links connecting to the technical architecture disclosures.
+  * **Extra Depth & Ahmedabad Edge Cases**:
+    * Statutory Gujarat Stamp Duty (4.9% basic with 0% female concession), 1% registration, 5% GST, and 20-year EMI benchmark in `aiEngine.ts` and chat.
+    * Touchpoints timeline in Sales Handover Dossier with DPDP explicit consent confirmation.
 
 ---
 

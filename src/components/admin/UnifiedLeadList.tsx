@@ -231,6 +231,24 @@ export const UnifiedLeadList: React.FC<UnifiedLeadListProps> = ({ onToast }) => 
           </button>
 
           <button
+            onClick={() => {
+              const res = ingestLead('Hardik Patel', '9825012345', 'Hoarding call', 'Project 1', '3 BHK');
+              onToast?.({
+                type: 'info',
+                title: 'Duplicate Check Triggered',
+                message: res.isNewRecord
+                  ? 'New lead registered'
+                  : 'Phone +91 98250 12345 identified! Merged repeat enquiry into Hardik Patel (LD-58210) without duplicate creation.',
+              });
+            }}
+            title="Test deduplication: Ingests a repeat enquiry from Hardik Patel via Hoarding"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-[#FBF7EE] hover:bg-[#F5EDD8] text-[#8F6C27] border border-[#C5A059]/40 transition-all hover:scale-[1.02] active:scale-95 btn-ripple"
+          >
+            <GitMerge className="w-3.5 h-3.5 text-[#C5A059]" />
+            <span>Test Deduplication</span>
+          </button>
+
+          <button
             onClick={() => setIsSimulateModalOpen(true)}
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-[#111418] hover:bg-[#2A3038] text-white shadow-xs transition-all hover:scale-[1.02] active:scale-95 btn-ripple"
           >

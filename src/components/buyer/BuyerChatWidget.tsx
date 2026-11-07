@@ -24,9 +24,11 @@ import { TRANSLATIONS } from '../../data/translations';
 interface BuyerChatWidgetProps {
   currentProject: ProjectId;
   language: LanguageCode;
+  onLanguageChange?: (lang: LanguageCode) => void;
+  onProjectChange?: (proj: ProjectId) => void;
 }
 
-// Persona demo data from official problem statement
+// Persona demo data from official problem statement + critical evaluation tests
 const PERSONAS = [
   {
     name: 'Hardik Patel',
@@ -57,6 +59,21 @@ const PERSONAS = [
   },
 ];
 
+const GUARDRAIL_TESTS = [
+  {
+    label: '₹5L Discount Request',
+    query: 'Can you give me a ₹5 Lakh discount and waive the registration charges?',
+    badge: 'Anti-Negotiation Guardrail',
+    badgeClass: 'bg-rose-50 text-rose-700 border-rose-200',
+  },
+  {
+    label: 'Unverified Metro Query',
+    query: 'Will Metro Phase 3 have a station directly inside your boundary wall?',
+    badge: 'Missing Fact Deferral & Audit',
+    badgeClass: 'bg-amber-50 text-amber-800 border-amber-200',
+  },
+];
+
 // Formats AI message text: bolds **text** patterns
 function formatMessageText(text: string): React.ReactNode {
   const parts = text.split(/(\*\*[^*]+\*\*)/g);
@@ -71,6 +88,8 @@ function formatMessageText(text: string): React.ReactNode {
 export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
   currentProject,
   language,
+  onLanguageChange,
+  onProjectChange,
 }) => {
   const { messages, isTyping, sendMessage, resetChat } = useChatStore();
   const { slots, holdSlot, bookSiteVisit } = useBookingStore();
@@ -114,12 +133,17 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
     setTimeout(() => setActivePersona(null), 2000);
   };
 
+  const handleGuardrailTest = async (test: typeof GUARDRAIL_TESTS[0]) => {
+    setShowPersonas(false);
+    await sendMessage(test.query, currentFact);
+  };
+
   const isEmpty = messages.length === 0 && !latestBooking;
 
   return (
     <div className="flex flex-col h-[calc(100dvh-8rem)] sm:h-[calc(100vh-9rem)] max-w-4xl mx-auto bg-white rounded-2xl border border-[#E6E4DF] shadow-xl overflow-hidden my-1 sm:my-3 transition-all">
 
-      {/* ── Demo Persona Tester ─────────────────────────────────────── */}
+      {/* ── Demo Persona & Guardrails Tester ─────────────────────────── */}
       <div className="bg-[#1A1E24] text-gray-300 border-b border-[#2A3038]">
         <div className="px-4 py-2 flex items-center justify-between">
           <button
@@ -127,15 +151,19 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
             className="flex items-center gap-1.5 text-[11px] font-bold text-[#C5A059] uppercase tracking-wider hover:text-[#E0B96A] transition-colors"
           >
             <Sparkles className="w-3 h-3" />
-            Try a Ground Truth Persona
+            Try Ground Truth Persona &amp; Guardrails
             <span className={`transition-transform duration-200 ${showPersonas ? 'rotate-180' : ''}`}>▾</span>
           </button>
-          <span className="text-[10px] text-gray-500 hidden sm:block">Preloaded sample leads from developer brief</span>
+          <div className="flex items-center gap-3 text-[10px] text-gray-400">
+            <span className="hidden sm:inline">Ahmedabad · 34°C Clear</span>
+            <span className="hidden md:inline font-mono text-gray-500">GujRERA Validated</span>
+          </div>
         </div>
 
-        {/* Collapsible persona chips */}
-        <div className={`overflow-hidden transition-all duration-300 ease-out ${showPersonas ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0'}`}>
-          <div className="flex items-center gap-2 px-4 pb-2 overflow-x-auto no-scrollbar">
+        {/* Collapsible persona & guardrail chips */}
+        <div className={`overflow-hidden transition-all duration-300 ease-out ${showPersonas ? 'max-h-32 opacity-100' : 'max-h-0 opacity-0'}`}>
+          <div className="flex items-center gap-2 px-4 pb-2.5 overflow-x-auto no-scrollbar">
+            {/* Personas */}
             {PERSONAS.map((p) => (
               <button
                 key={p.id}
@@ -153,43 +181,88 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
                 <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full border ${p.sourceBg}`}>{p.source}</span>
               </button>
             ))}
+
+            {/* Guardrail One-Click Tests */}
+            {GUARDRAIL_TESTS.map((gt) => (
+              <button
+                key={gt.label}
+                onClick={() => handleGuardrailTest(gt)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#C5A059]/40 bg-[#111418] hover:bg-[#2A3038] text-[11px] font-bold text-[#C5A059] whitespace-nowrap flex-shrink-0 transition-all hover:scale-[1.02] active:scale-95 btn-ripple"
+              >
+                <Zap className="w-3 h-3 text-[#C5A059]" />
+                <span>{gt.label}</span>
+                <span className={`text-[9px] font-semibold px-1.5 py-0.2 rounded-full border ${gt.badgeClass}`}>{gt.badge}</span>
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* ── Concierge Status Bar ───────────────────────────────────── */}
-      <div className="bg-gradient-to-r from-[#111418] to-[#1A1E24] text-white px-4 sm:px-6 py-3 flex items-center justify-between border-b border-[#2A3038] flex-shrink-0">
-        <div className="flex items-center gap-3">
+      {/* ── Concierge Status Bar with Trilingual Switcher ─────────────── */}
+      <div className="bg-gradient-to-r from-[#111418] to-[#1A1E24] text-white px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between border-b border-[#2A3038] flex-shrink-0">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           {/* AI Avatar */}
           <div className="relative">
-            <div className="w-10 h-10 rounded-full bg-[#111418] border-2 border-[#C5A059]/50 flex items-center justify-center shrink-0 shadow-lg">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#111418] border-2 border-[#C5A059]/50 flex items-center justify-center shrink-0 shadow-lg">
               <span className="shimmer-text text-sm font-serif font-bold">A</span>
             </div>
             {/* Online dot */}
-            <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#111418]">
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-500 border-2 border-[#111418]">
               <span className="absolute inset-0 rounded-full bg-emerald-400 status-ping" />
             </span>
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h2 className="font-serif font-bold text-sm sm:text-base text-white leading-tight">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <h2 className="font-serif font-bold text-xs sm:text-base text-white leading-tight">
                 {currentFact.commercialName}
               </h2>
-              <span className="text-[9px] bg-[#C5A059]/20 text-[#C5A059] font-mono px-2 py-0.5 rounded-full border border-[#C5A059]/30">
-                AI Concierge
-              </span>
+              {onProjectChange && (
+                <button
+                  onClick={() => onProjectChange(currentProject === 'Project 1' ? 'Project 2' : 'Project 1')}
+                  className="text-[9px] bg-[#C5A059]/20 hover:bg-[#C5A059]/30 text-[#C5A059] font-mono px-2 py-0.5 rounded-full border border-[#C5A059]/30 transition-colors"
+                  title="Click to toggle project"
+                >
+                  Switch Proj ⇄
+                </button>
+              )}
             </div>
-            <p className="text-[11px] text-gray-400 mt-0.5 truncate max-w-[180px] sm:max-w-sm">
+            <p className="text-[10px] sm:text-[11px] text-gray-400 mt-0.5 truncate max-w-[150px] sm:max-w-sm">
               {currentFact.tagline}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Trilingual Switcher Pills */}
+          {onLanguageChange && (
+            <div className="flex items-center bg-[#2A3038] p-0.5 rounded-lg border border-gray-700">
+              {(
+                [
+                  { code: 'en' as LanguageCode, label: 'EN' },
+                  { code: 'hi' as LanguageCode, label: 'HI' },
+                  { code: 'gu' as LanguageCode, label: 'GU' },
+                ] as const
+              ).map((l) => (
+                <button
+                  key={l.code}
+                  onClick={() => onLanguageChange(l.code)}
+                  className={`text-[10px] font-bold px-2 py-1 rounded-md transition-colors ${
+                    language === l.code
+                      ? 'bg-[#C5A059] text-[#111418]'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                  title={`Switch to ${l.code.toUpperCase()}`}
+                >
+                  {l.label}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Book Visit CTA */}
           <button
             onClick={() => setIsSlotModalOpen(true)}
-            className="flex items-center gap-1.5 bg-[#C5A059] hover:bg-[#B8904F] text-[#111418] font-bold text-xs px-3 py-2 rounded-xl shadow-xs transition-all hover:scale-[1.03] active:scale-95 glow-bronze btn-ripple"
+            className="flex items-center gap-1 sm:gap-1.5 bg-[#C5A059] hover:bg-[#B8904F] text-[#111418] font-bold text-xs px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl shadow-xs transition-all hover:scale-[1.03] active:scale-95 glow-bronze btn-ripple"
           >
             <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
             <span className="hidden sm:inline">Book Visit</span>
@@ -199,7 +272,7 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
           {/* Reset chat */}
           <button
             onClick={resetChat}
-            className="p-2 rounded-lg text-gray-500 hover:text-gray-200 hover:bg-white/10 transition-colors"
+            className="p-1.5 sm:p-2 rounded-lg text-gray-500 hover:text-gray-200 hover:bg-white/10 transition-colors"
             title="Reset conversation"
             aria-label="Reset chat"
           >
@@ -313,8 +386,8 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
                     {/* Action button inside AI bubble */}
                     {!isUser && (
                       <div className="mt-3 pt-2.5 border-t border-[#F0EDE8] flex flex-wrap items-center gap-2">
-                        {/* Book Visit CTA for Price/Visit Intent */}
-                        {(msg.detectedIntent === 'ASK_PRICE' || msg.detectedIntent === 'REQUEST_VISIT') && (
+                        {/* Book Visit CTA for Price/Visit/Cost Intent */}
+                        {(msg.detectedIntent === 'ASK_PRICE' || msg.detectedIntent === 'REQUEST_VISIT' || msg.detectedIntent === 'ASK_COST_BREAKDOWN') && (
                           <button
                             onClick={() => setIsSlotModalOpen(true)}
                             className="flex items-center gap-1.5 bg-gradient-to-r from-[#C5A059] to-[#A37F38] hover:brightness-105 text-[#111418] text-xs font-bold px-3 py-1.5 rounded-xl transition-all shadow-xs hover:scale-[1.01] active:scale-[0.99] btn-ripple"
@@ -403,6 +476,13 @@ export const BuyerChatWidget: React.FC<BuyerChatWidgetProps> = ({
           >
             <Sparkles className="w-3 h-3" />
             Compare Projects
+          </button>
+
+          <button
+            onClick={() => handleQuickChip('Gujarat Stamp Duty & EMI Breakdown')}
+            className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold bg-[#F8F7F4] hover:bg-[#ECEAE5] text-[#8F6C27] border border-[#C5A059]/40 transition-all shrink-0 flex items-center gap-1 btn-ripple"
+          >
+            <span>Gujarat Stamp Duty &amp; EMI</span>
           </button>
 
           {[

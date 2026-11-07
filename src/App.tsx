@@ -122,6 +122,8 @@ export const App: React.FC = () => {
               <BuyerChatWidget
                 currentProject={currentProject}
                 language={language}
+                onLanguageChange={setLanguage}
+                onProjectChange={setCurrentProject}
               />
             </div>
           )}
@@ -229,6 +231,13 @@ export const App: React.FC = () => {
             This platform is governed under the Real Estate (Regulation and Development) Act 2016 (RERA) and the Digital Personal Data Protection Act 2023 (DPDP). All promotional claims are limited to registered project details. Buyer data processed only with explicit prior consent. Opt-out honoured immediately.
             <span className="block mt-1.5 text-gray-500">
               <strong className="text-gray-400">Platform Limits &amp; Boundaries:</strong> AI responses are strictly grounded in the Sales Head&apos;s published fact sheet. Missing facts are deferred to human advisors and flagged for daily audit. Final prices, customized payment schedules, and allotment letters require certified sales head review.
+              <button
+                onClick={() => setCurrentView('factsheet-cms')}
+                className="text-[#C5A059] hover:underline font-semibold ml-1.5 inline-flex items-center gap-0.5"
+              >
+                <span>Read Full Technical Architecture &amp; Operational Boundaries</span>
+                <span>→</span>
+              </button>
             </span>
           </div>
         </div>

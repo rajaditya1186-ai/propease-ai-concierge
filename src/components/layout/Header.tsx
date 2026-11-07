@@ -14,6 +14,7 @@ import {
   Clock,
   Sparkles,
   ChevronRight,
+  ShieldCheck,
 } from 'lucide-react';
 import { LanguageCode } from '../../types/lead';
 import { ProjectId } from '../../types/booking';
@@ -202,6 +203,18 @@ export const Header: React.FC<HeaderProps> = ({
                   <span className="font-mono text-xs font-bold tabular-nums tracking-wider">{liveTime}</span>
                   <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">IST</span>
                 </div>
+              )}
+
+              {/* Concurrency Mutex Quick Test Pill */}
+              {onOpenStressTest && (
+                <button
+                  onClick={onOpenStressTest}
+                  className="hidden xl:flex items-center gap-1.5 text-xs font-bold text-[#8F6C27] bg-[#FBF7EE] hover:bg-[#F5EDD8] border border-[#C5A059]/40 rounded-xl px-2.5 py-1.5 transition-all shadow-2xs hover:scale-[1.02] active:scale-95 btn-ripple"
+                  title="Run Concurrency Mutex Race Test"
+                >
+                  <Zap className="w-3.5 h-3.5 text-[#C5A059]" />
+                  <span>Test Mutex</span>
+                </button>
               )}
 
               {/* Settings & Tools button */}
@@ -421,6 +434,29 @@ export const Header: React.FC<HeaderProps> = ({
                     </button>
                   </div>
                 )}
+
+                {/* 5. System Limits & Operational Boundaries */}
+                <div className="space-y-3 pt-4 border-t border-[#E6E4DF] sidebar-section">
+                  <div>
+                    <label className="text-xs font-bold uppercase tracking-wider text-[#111418] flex items-center gap-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                      Platform Boundaries &amp; Limits
+                    </label>
+                    <p className="text-[11px] text-gray-500 mt-0.5">
+                      Honest disclosures on RAG fact grounding, non-negotiation guardrails, DPDP opt-out, and WhatsApp API quotas.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setIsSidebarOpen(false);
+                      onViewChange('factsheet-cms');
+                    }}
+                    className="w-full flex items-center justify-between py-2.5 px-4 rounded-xl text-xs font-semibold bg-[#F8F7F4] hover:bg-[#E6E4DF] text-gray-800 border border-[#E6E4DF] transition-all cursor-pointer group btn-ripple"
+                  >
+                    <span>View Technical &amp; Legal Boundaries</span>
+                    <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform text-gray-500" />
+                  </button>
+                </div>
               </div>
 
               {/* Drawer Footer */}

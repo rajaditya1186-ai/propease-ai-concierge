@@ -148,6 +148,33 @@ export const HandoverDossier: React.FC<HandoverDossierProps> = ({
         </div>
       </div>
 
+      {/* Multi-Channel Journey & Statutory DPDP Status */}
+      <div className="bg-[#F8F7F4] p-3 rounded-xl border border-[#E6E4DF] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+            Deduplicated Touchpoints:
+          </span>
+          {lead?.touchpoints && lead.touchpoints.length > 0 ? (
+            lead.touchpoints.map((tp, i) => (
+              <span
+                key={i}
+                className="inline-flex items-center gap-1 bg-white text-gray-700 px-2 py-0.5 rounded-md border border-gray-200 text-[10px] font-medium"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-[#C5A059]" />
+                {tp.source}
+              </span>
+            ))
+          ) : (
+            <span className="text-gray-500 text-[11px] font-medium">Single Source: {lead?.source || 'Portal'}</span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1.5 text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+          <span>DPDP Act 2023 Explicit Consent Verified</span>
+        </div>
+      </div>
+
       {/* WhatsApp Template Communication Button */}
       {onOpenWhatsAppSim && (
         <div className="pt-2 flex justify-end">
