@@ -98,6 +98,7 @@
 
 ### 3. Git Commit History
 ```
+8831cae feat(footer): elevate to architectural 4-column developer footer with RERA copy, SLA badge, and module shortcuts
 9ede603 perf: optimize bundle chunking, memoize lead filtering, add error boundary, and expand test suite to 10/10
 697b50d feat(ux): elevate evaluator trial flow, inline trilingual switch, statutory limits tab, and deduplication test
 f008617 refactor(ui): remove unwanted speculative toolbars, audio effects, and extra modals for clean luxury aesthetic
