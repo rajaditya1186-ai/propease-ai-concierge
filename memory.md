@@ -90,6 +90,7 @@
 
 ### 3. Git Commit History
 ```
+9ede603 perf: optimize bundle chunking, memoize lead filtering, add error boundary, and expand test suite to 10/10
 697b50d feat(ux): elevate evaluator trial flow, inline trilingual switch, statutory limits tab, and deduplication test
 f008617 refactor(ui): remove unwanted speculative toolbars, audio effects, and extra modals for clean luxury aesthetic
 4955945 feat(ux): elevate to client-ready product with interactive director sandbox, lead dossier drawer, command palette, and audio feedback
