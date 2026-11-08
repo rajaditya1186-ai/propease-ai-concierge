@@ -117,6 +117,7 @@
 
 ### 3. Git Commit History
 ```
+e758998 docs: synchronize live Netlify URL and GitHub repo in submission documents and zip
 bf10cb4 docs: generate technical design document (PDF/Word), deployment guide, and submission zip package
 e6a98f0 feat(footer): streamline into minimal luxury 3-column layout with sales desk contact and RERA copy
 8831cae feat(footer): elevate to architectural 4-column developer footer with RERA copy, SLA badge, and module shortcuts

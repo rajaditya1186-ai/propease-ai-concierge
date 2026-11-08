@@ -1,10 +1,18 @@
 # PropEase AI Lead-Response & Site-Visit Booking Platform
 ### Residential Real Estate AI Assistant for Company A (Ahmedabad, Gujarat)
 
-[![Build & Typecheck](https://img.shields.io/badge/Build-Passing-emerald?style=flat-square)](file:///c:/Users/Aditya%20Raj.000/Desktop/IsoCode_Workspace/dist/)
-[![Tests](https://img.shields.io/badge/Tests-6%2F6%20Passing%20(100%25)-blue?style=flat-square)](file:///c:/Users/Aditya%20Raj.000/Desktop/IsoCode_Workspace/tests/runVerification.mjs)
-[![License](https://img.shields.io/badge/GujRERA-Compliant-gold?style=flat-square)](https://gujrera.gujarat.gov.in)
-[![Privacy](https://img.shields.io/badge/DPDP%20Act%202023-Consent%20Enforced-emerald?style=flat-square)](#)
+[![Live App](https://img.shields.io/badge/Live%20App-Active%20(Netlify)-00C7B7?style=for-the-badge&logo=netlify)](https://propease-ai-concierge.netlify.app)
+[![GitHub](https://img.shields.io/badge/GitHub-rajaditya1186--ai%2Fpropease--ai--concierge-181717?style=for-the-badge&logo=github)](https://github.com/rajaditya1186-ai/propease-ai-concierge)
+[![Tests](https://img.shields.io/badge/Tests-10%2F10%20Passing%20(100%25)-1B7A4D?style=for-the-badge)](./tests/runVerification.mjs)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Strict%20Mode-3178C6?style=for-the-badge&logo=typescript)](./tsconfig.json)
+
+---
+
+### Direct Evaluation Links
+* **Live Production Web Application**: [https://propease-ai-concierge.netlify.app](https://propease-ai-concierge.netlify.app)
+* **GitHub Repository**: [https://github.com/rajaditya1186-ai/propease-ai-concierge](https://github.com/rajaditya1186-ai/propease-ai-concierge)
+* **Candidate / Author**: Aditya Raj (`rajaditya.1186@gmail.com`)
+* **Primary Submission Package**: [`submission.zip`](./submission.zip) *(Contains Technical Design Document PDF/Word & deployment.md)*
 
 ---
 
@@ -36,7 +44,7 @@ PropEase delivers an end-to-end client-ready software solution that eliminates t
 
 ---
 
-## 3. Core Build: The 6 to 8 Interactive Screens
+## 3. Core Build: The 8 Interactive Screens
 
 | Screen | Core Role & Target User | Key Capabilities |
 | :--- | :--- | :--- |
@@ -60,54 +68,78 @@ $$\forall \text{slot } s \in \text{Slots}: \quad s.\text{confirmedCount} + \sum 
 1. **Phase 1: Temporary Lock Acquisition (Hold)**:
    * When a buyer selects a time slot, `acquireSlotHold(slotId, leadPhone)` validates that `confirmedCount + activeHolds < maxCapacity`.
    * If free, it creates an ephemeral hold with a 180-second TTL (`expiresAt = Date.now() + 180_000`).
-   * A 3-minute reservation countdown appears in the UI.
+   * A 3-minute circular countdown timer ring appears in the UI.
 2. **Phase 2: Atomic Commitment**:
    * When the buyer confirms their details, `validateAndCommitBooking(slot, holdId)` atomically verifies slot capacity, increments `confirmedCount += 1`, releases the hold, assigns a named advisor, and generates calendar invites.
 3. **Graceful Conflict Resolution**:
-   * If two parallel users race for the last remaining slot, the first acquires the lock; the second is gracefully notified: *"That slot was just reserved a moment ago. We have reserved the next best slot for you: [12:00 PM]. Would you like to confirm this?"*
+   * If two parallel users race for the last remaining slot, the first acquires the lock; the second is gracefully notified and redirected to the next best available slot.
 4. **Auto-Expiration**:
    * Abandoned holds silently evaporate after 180 seconds, restoring slot availability without manual intervention.
 
 ---
 
-## 5. Seed Data Ground Truth & Sample Records
+## 5. Reviewer 1-Click Verification Scenarios
+
+To verify the core capabilities in the live app in under 60 seconds:
+
+| Scenario | Where to Test | How to Trigger | Expected Behavior |
+| :--- | :--- | :--- | :--- |
+| **₹5L Discount Refusal** | Buyer Concierge Tab | Click the **"₹5L Discount?"** chip | AI strictly enforces GujRERA Sec 11(4) non-negotiation policy, refusing verbal discounts over chat. |
+| **Missing Fact Deferral** | Buyer Concierge Tab | Click the **"Metro Phase 3?"** chip | AI acknowledges boundary, defers to sales advisor, and logs the chat for audit. |
+| **Lead Deduplication** | Lead Hub Tab | Click the **"Test Deduplication"** button | Ingests repeat inquiry from Hardik Patel via Hoarding. Merges touchpoint without creating duplicate rows. |
+| **5-Buyer Race Condition** | Header | Click the **"Test Mutex"** pill | Fires 5 simultaneous bookings for 1 remaining slot. Exactly 1 succeeds; 4 receive concurrency backoffs. Zero double-booking. |
+| **DPDP Opt-Out** | WhatsApp Simulator | Type or click **`STOP`** | Immediate communication suspension under DPDP Act 2023. Replying `START` restores consent. |
+| **Gujarat Stamp Duty Math** | Buyer Concierge Tab | Ask *"What is the stamp duty?"* | AI calculates Gujarat 4.9% stamp duty, 0% female concession, 1% registration, and 20-year EMI benchmarks. |
+
+---
+
+## 6. Seed Data Ground Truth & Sample Records
 
 The 3 mandatory sample leads from the problem statement are seeded permanently as ground truth:
-* **`LD-58210`**: Hardik Patel | Property portal | Project 1 (The Grand Orchid) | 3 BHK | Booked 2026-11-01 11:00
-* **`LD-58211`**: Nidhi Shah | Social media ad | Project 2 (Orchid Heights) | 2 BHK | Not booked
+* **`LD-58210`**: Hardik Patel | Property portal | Project 1 (The Grand Orchid) | 3 BHK | Booked
+* **`LD-58211`**: Nidhi Shah | Social media ad | Project 2 (Orchid Heights) | 2 BHK | In Conversation
 * **`LD-58224`**: Kavita Joshi | Hoarding call | Project 2 (Orchid Heights) | 2 BHK | Visited
 
 *Plus 27 synthetic leads spanning all acquisition channels, languages, duplicate touchpoints, and visit outcomes.*
 
 ---
 
-## 6. How to Run & Verify
+## 7. How to Run Locally
 
 ### Prerequisites
 * Node.js v18+ or v20+ / v22+
-* npm or pnpm
+* npm or pnpm or yarn
 
 ### Quick Start
 ```bash
-# 1. Install dependencies
+# 1. Clone repository
+git clone https://github.com/rajaditya1186-ai/propease-ai-concierge.git
+cd propease-ai-concierge
+
+# 2. Install dependencies
 npm install
 
-# 2. Run the automated verification test suite
-node tests/runVerification.mjs
+# 3. Run automated regression test suite (10/10 tests)
+npm test
 
-# 3. Build the production bundle
-npm run build
-
-# 4. Start the development server
+# 4. Start local development server
 npm run dev
-```
 
-Open **`http://localhost:3000`** in your browser.
+# 5. Build for production (Strict TypeScript + Rollup chunking)
+npm run build
+```
 
 ---
 
-## 7. Verification Test Suite Output
+## 8. Automated Test Suite (10 / 10 Passing)
+
+Run the verification test suite locally:
+```bash
+node tests/runVerification.mjs
 ```
+
+**Output**:
+```text
 ================================================================
 PropEase AI Concierge: Verification & Regression Test Suite
 Company A (Ahmedabad) • Real Estate Platform
@@ -119,22 +151,34 @@ Company A (Ahmedabad) • Real Estate Platform
 [PASS] AI Guardrail: Blocks price discount and negotiation attempts
 [PASS] AI Guardrail: Defers missing facts and flags chat for Sales Head audit
 [PASS] Ground Truth Seeds: Verifies sample leads LD-58210, LD-58211, and LD-58224 exist
+[PASS] GujRERA & DPDP: Validates official registration numbers and consent gate
+[PASS] Multilingual Parser: Recognizes intents across English, Hindi, and Gujarati
+[PASS] Statutory Math: Calculates Gujarat 4.9% stamp duty, 0% female concession, and recognizes intent
+[PASS] DPDP State Machine: Handles STOP opt-out and START opt-in with RERA template verification
 
 ================================================================
-Results: 6 / 6 test suites passed cleanly (100%).
+Results: 10 / 10 test suites passed cleanly (100%).
 ================================================================
 ```
 
 ---
 
-## 8. Technical Design Document & Repository Reference
-* **Author**: Aditya Raj (`rajaditya.1186@gmail.com`)
-* **Repository**: [https://github.com/adityaraj-workspace/propease-ai-concierge](https://github.com/adityaraj-workspace/propease-ai-concierge)
-* **Technical Design Document**: [`TDD.md`](file:///c:/Users/Aditya%20Raj.000/Desktop/IsoCode_Workspace/TDD.md)
-* **Product Requirements Document**: [`PRD.md`](file:///c:/Users/Aditya%20Raj.000/Desktop/IsoCode_Workspace/PRD.md)
-* **Architecture Specification**: [`Architecture.md`](file:///c:/Users/Aditya%20Raj.000/Desktop/IsoCode_Workspace/Architecture.md)
-* **Engineering & AI Rules**: [`rules.md`](file:///c:/Users/Aditya%20Raj.000/Desktop/IsoCode_Workspace/rules.md)
-* **Design Tokens & Theme**: [`design.md`](file:///c:/Users/Aditya%20Raj.000/Desktop/IsoCode_Workspace/design.md)
-* **Phased Roadmap**: [`phases.md`](file:///c:/Users/Aditya%20Raj.000/Desktop/IsoCode_Workspace/phases.md)
-* **Living State Ledger**: [`memory.md`](file:///c:/Users/Aditya%20Raj.000/Desktop/IsoCode_Workspace/memory.md)
-* **Antigravity CLI Directives**: [`Agent.md`](file:///c:/Users/Aditya%20Raj.000/Desktop/IsoCode_Workspace/Agent.md)
+## 9. Technical Specifications & Documentation References
+
+* **Technical Design Document**: [`Technical_Design_Document.pdf`](./Technical_Design_Document.pdf) & [`Technical_Design_Document.docx`](./Technical_Design_Document.docx)
+* **Deployment Guide**: [`deployment.md`](./deployment.md)
+* **Submission Archive**: [`submission.zip`](./submission.zip)
+* **Architecture Specification**: [`Architecture.md`](./Architecture.md)
+* **Product Requirements Document (PRD)**: [`PRD.md`](./PRD.md)
+* **Design System & Theme Tokens**: [`design.md`](./design.md)
+* **Technical Design Document (Markdown)**: [`TDD.md`](./TDD.md)
+* **Operational Rules & AI Boundaries**: [`rules.md`](./rules.md)
+* **Phased Roadmap**: [`phases.md`](./phases.md)
+* **Living State Ledger**: [`memory.md`](./memory.md)
+
+---
+
+### Author & Evaluator Support
+* **Aditya Raj**: `rajaditya.1186@gmail.com`
+* **Live App**: [https://propease-ai-concierge.netlify.app](https://propease-ai-concierge.netlify.app)
+* **Repository**: [https://github.com/rajaditya1186-ai/propease-ai-concierge](https://github.com/rajaditya1186-ai/propease-ai-concierge)
