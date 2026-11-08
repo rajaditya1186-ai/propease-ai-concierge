@@ -98,6 +98,16 @@
   * **Sub-Footer**: GujRERA numbers, pulsing DPDP verified badge, evaluation authorship notice, and smooth Back-to-Top scroll trigger.
   * **Production Quality**: 100% clean TypeScript build (`tsc && vite build`) and 10/10 automated verification test suites passing.
 
+* [x] **Step 19: Submission Artifacts & Evaluator Packaging**:
+  * **Technical Design Document**: Generated publication-quality [`Technical_Design_Document.pdf`](file:///c:/Users/Aditya%20Raj.000/Desktop/IsoCode_Workspace/Technical_Design_Document.pdf) and Word [`Technical_Design_Document.docx`](file:///c:/Users/Aditya%20Raj.000/Desktop/IsoCode_Workspace/Technical_Design_Document.docx) covering all required submission criteria:
+    * GitHub repository URL (`https://github.com/rajaditya1186/propease-ai-concierge`) and Live app URL (`https://propease-ai-concierge.vercel.app`) at the top.
+    * Architecture selection & rationale (SPA offline-first, strict TypeScript, zero-latency RAG, Two-Phase Mutex).
+    * Complete data model, the 5 core system flows, and trilingual AI grounding / anti-negotiation guardrail operation.
+    * UI & design decisions for all 8 key screens rooted in restrained architectural luxury.
+    * Explicit notes on what was cut (audio synthesizers, floating demo bars, voice dictation, out-of-scope ERP) and next production steps (Meta WhatsApp API, Redis Redlock cluster, IoT check-in kiosk).
+  * **Deployment Guide**: Created [`deployment.md`](file:///c:/Users/Aditya%20Raj.000/Desktop/IsoCode_Workspace/deployment.md) with step-by-step local setup, Vercel/Netlify/Docker deployment instructions, environment variables list (names only), and reviewer demo login details across all 4 enterprise personas.
+  * **Submission Archive**: Packaged files into `submission.zip` (60.6 KB, well under the 25 MB limit) verified with `testzip()`.
+
 ---
 
 ### 3. Git Commit History
