@@ -112,6 +112,7 @@
 
 ### 3. Git Commit History
 ```
+bf10cb4 docs: generate technical design document (PDF/Word), deployment guide, and submission zip package
 e6a98f0 feat(footer): streamline into minimal luxury 3-column layout with sales desk contact and RERA copy
 8831cae feat(footer): elevate to architectural 4-column developer footer with RERA copy, SLA badge, and module shortcuts
 9ede603 perf: optimize bundle chunking, memoize lead filtering, add error boundary, and expand test suite to 10/10
