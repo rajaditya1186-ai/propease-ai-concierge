@@ -113,10 +113,17 @@
   * Synchronized all URLs across `deployment.md`, `generate_docx.py`, `generate_pdf.py`, and `submission.zip`.
   * Verified 10/10 automated tests passing, clean build, and 0 zip corruption errors.
 
+* [x] **Step 21: GitHub Repository Excellence & Continuous Integration (CI)**:
+  * **GitHub Actions CI Workflow**: Created [`.github/workflows/ci.yml`](file:///c:/Users/Aditya%20Raj.000/Desktop/IsoCode_Workspace/.github/workflows/ci.yml) running automated tests and strict TypeScript builds on every push.
+  * **Open Source Licensing**: Added official MIT License in [`LICENSE`](file:///c:/Users/Aditya%20Raj.000/Desktop/IsoCode_Workspace/LICENSE).
+  * **Visual Architecture Diagram**: Embedded interactive Mermaid flowchart into [`README.md`](file:///c:/Users/Aditya%20Raj.000/Desktop/IsoCode_Workspace/README.md) natively rendered by GitHub.
+  * **Cleaned Artifacts**: Purged internal metadata (`ai.txt`) and strengthened `.gitignore`.
+
 ---
 
 ### 3. Git Commit History
 ```
+8afb131 docs(readme): polish README with live Netlify badge, 10/10 test status, and relative markdown links
 e758998 docs: synchronize live Netlify URL and GitHub repo in submission documents and zip
 bf10cb4 docs: generate technical design document (PDF/Word), deployment guide, and submission zip package
 e6a98f0 feat(footer): streamline into minimal luxury 3-column layout with sales desk contact and RERA copy

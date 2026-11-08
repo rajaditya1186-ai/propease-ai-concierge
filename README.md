@@ -2,9 +2,11 @@
 ### Residential Real Estate AI Assistant for Company A (Ahmedabad, Gujarat)
 
 [![Live App](https://img.shields.io/badge/Live%20App-Active%20(Netlify)-00C7B7?style=for-the-badge&logo=netlify)](https://propease-ai-concierge.netlify.app)
+[![CI](https://github.com/rajaditya1186-ai/propease-ai-concierge/actions/workflows/ci.yml/badge.svg)](https://github.com/rajaditya1186-ai/propease-ai-concierge/actions)
 [![GitHub](https://img.shields.io/badge/GitHub-rajaditya1186--ai%2Fpropease--ai--concierge-181717?style=for-the-badge&logo=github)](https://github.com/rajaditya1186-ai/propease-ai-concierge)
 [![Tests](https://img.shields.io/badge/Tests-10%2F10%20Passing%20(100%25)-1B7A4D?style=for-the-badge)](./tests/runVerification.mjs)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Strict%20Mode-3178C6?style=for-the-badge&logo=typescript)](./tsconfig.json)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](./LICENSE)
 
 ---
 
@@ -41,6 +43,57 @@ PropEase delivers an end-to-end client-ready software solution that eliminates t
 4. **Instant Sales Handoff**: Routes serious buyers to one of Company A's 11 named sales advisors with a 3-bullet AI qualification dossier.
 5. **Channel Attribution & ROI Dashboard**: Live visibility into median response times, visits delivered, show-up rates, and cost per visit across Portals, Social Ads, Hoardings, and Web.
 6. **Regulatory Compliance**: Integrates official GujRERA registration numbers (`PR/GJ/AHMEDABAD/...`) and DPDP Act 2023 opt-in/opt-out consent mechanisms.
+
+```mermaid
+flowchart TD
+    subgraph INGEST["1. Multi-Channel Ingestion"]
+        P1["Property Portals (99acres / MagicBricks)"]
+        P2["Social Ads (Meta / Instagram)"]
+        P3["Inbound Website"]
+        P4["Physical Hoardings (Calls / QR)"]
+    end
+
+    subgraph HUB["2. Unified Lead Hub & Dedup"]
+        E164["E.164 (+91) Phone Normalizer"]
+        DEDUP["Deduplication Engine (Phone & Email Match)"]
+        LEDGER["Multi-Touchpoint Ledger (Touchpoint Consolidation)"]
+    end
+
+    subgraph CORE["3. PropEase AI & Booking Engines"]
+        direction LR
+        subgraph AI["Multilingual AI Concierge"]
+            NLU["Trilingual Parser (EN / HI / GU)"]
+            RAG["Fact-Sheet Grounding (Zero Hallucination)"]
+            GUARD["GujRERA Anti-Negotiation (Sec 11(4))"]
+            TAX["Gujarat Stamp Duty & EMI (4.9% rate, 0% female)"]
+        end
+        subgraph MUTEX["Atomic Mutex Booking Engine"]
+            SLOTS["Live Capacity Matrix (2 visitors / slot)"]
+            HOLD["Phase 1: 180s Mutex Hold (Optimistic Lock)"]
+            COMMIT["Phase 2: Atomic Commit (Zero Double-Booking)"]
+            PASS["Luxury Boarding Pass (QR + GPS + .ics)"]
+        end
+    end
+
+    subgraph WORKSPACE["4. Sales Advisor Workspace & Handover"]
+        QUEUE["11 Named Sales Advisor Queues"]
+        DOSSIER["Warm Handover Dossier (3-Bullet AI Digest)"]
+        ATTEND["Visit Attendance Controller (Show / No-Show)"]
+        WHATSAPP["WhatsApp Simulator (DPDP Act 2023 STOP / START)"]
+    end
+
+    subgraph DASHBOARD["5. Executive Dashboard & Governance CMS"]
+        KPI["Response SLA Tracker (18s median vs 14h)"]
+        RECOVER["Ad Spend Recovery (₹9.45 Lakh/mo saved)"]
+        SANDBOX["Director's ROI Sandbox (Scenario Sliders)"]
+        CMS["Fact Sheet CMS & Audit Console (Chat Triage)"]
+    end
+
+    INGEST --> HUB
+    HUB --> CORE
+    CORE --> WORKSPACE
+    WORKSPACE --> DASHBOARD
+```
 
 ---
 
