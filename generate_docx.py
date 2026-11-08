@@ -82,8 +82,8 @@ def create_docx():
         else:
             r2.font.color.rgb = COLOR_BODY
 
-    add_meta_line(p, "GitHub Repository (Project Code)", "https://github.com/rajaditya1186/propease-ai-concierge", is_link=True)
-    add_meta_line(p, "Live Web Application (Vercel Production)", "https://propease-ai-concierge.vercel.app", is_link=True)
+    add_meta_line(p, "GitHub Repository (Project Code)", "https://github.com/rajaditya1186-ai/propease-ai-concierge", is_link=True)
+    add_meta_line(p, "Live Web Application (Active Production)", "https://propease-ai-concierge.netlify.app", is_link=True)
     add_meta_line(p, "Candidate / Author", "Aditya Raj (rajaditya.1186@gmail.com)")
     add_meta_line(p, "Target Enterprise", "Company A — Ahmedabad Residential Developer (420 luxury units, ₹180–₹220 Cr bookings)")
     add_meta_line(p, "Statutory Compliance", "GujRERA Sanctioned (RAA09876 & RAA09877) · DPDP Act 2023 Consent Enforced", color_rgb=COLOR_EMERALD)

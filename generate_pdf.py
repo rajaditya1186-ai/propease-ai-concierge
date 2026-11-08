@@ -184,11 +184,11 @@ def create_pdf():
     meta_data = [
         [
             Paragraph("<b>GitHub Repository:</b>", style_meta_label),
-            Paragraph("<b><font color='#2563EB'><u>https://github.com/rajaditya1186/propease-ai-concierge</u></font></b>", style_meta_val)
+            Paragraph("<b><font color='#2563EB'><u>https://github.com/rajaditya1186-ai/propease-ai-concierge</u></font></b>", style_meta_val)
         ],
         [
             Paragraph("<b>Live Web Application:</b>", style_meta_label),
-            Paragraph("<b><font color='#2563EB'><u>https://propease-ai-concierge.vercel.app</u></font></b>", style_meta_val)
+            Paragraph("<b><font color='#2563EB'><u>https://propease-ai-concierge.netlify.app</u></font></b>", style_meta_val)
         ],
         [
             Paragraph("<b>Candidate / Author:</b>", style_meta_label),

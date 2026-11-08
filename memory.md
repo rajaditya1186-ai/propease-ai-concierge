@@ -100,13 +100,18 @@
 
 * [x] **Step 19: Submission Artifacts & Evaluator Packaging**:
   * **Technical Design Document**: Generated publication-quality [`Technical_Design_Document.pdf`](file:///c:/Users/Aditya%20Raj.000/Desktop/IsoCode_Workspace/Technical_Design_Document.pdf) and Word [`Technical_Design_Document.docx`](file:///c:/Users/Aditya%20Raj.000/Desktop/IsoCode_Workspace/Technical_Design_Document.docx) covering all required submission criteria:
-    * GitHub repository URL (`https://github.com/rajaditya1186/propease-ai-concierge`) and Live app URL (`https://propease-ai-concierge.vercel.app`) at the top.
+    * GitHub repository URL (`https://github.com/rajaditya1186-ai/propease-ai-concierge`) and Live app URL (`https://propease-ai-concierge.netlify.app`) at the top.
     * Architecture selection & rationale (SPA offline-first, strict TypeScript, zero-latency RAG, Two-Phase Mutex).
     * Complete data model, the 5 core system flows, and trilingual AI grounding / anti-negotiation guardrail operation.
     * UI & design decisions for all 8 key screens rooted in restrained architectural luxury.
     * Explicit notes on what was cut (audio synthesizers, floating demo bars, voice dictation, out-of-scope ERP) and next production steps (Meta WhatsApp API, Redis Redlock cluster, IoT check-in kiosk).
-  * **Deployment Guide**: Created [`deployment.md`](file:///c:/Users/Aditya%20Raj.000/Desktop/IsoCode_Workspace/deployment.md) with step-by-step local setup, Vercel/Netlify/Docker deployment instructions, environment variables list (names only), and reviewer demo login details across all 4 enterprise personas.
-  * **Submission Archive**: Packaged files into `submission.zip` (60.6 KB, well under the 25 MB limit) verified with `testzip()`.
+  * **Deployment Guide**: Created [`deployment.md`](file:///c:/Users/Aditya%20Raj.000/Desktop/IsoCode_Workspace/deployment.md) with step-by-step local setup, Netlify/Vercel/Docker deployment instructions, environment variables list (names only), and reviewer demo login details across all 4 enterprise personas.
+  * **Submission Archive**: Packaged files into `submission.zip` (60.7 KB, well under the 25 MB limit) verified with `testzip()`.
+
+* [x] **Step 20: Live Production Netlify Deployment Synchronization**:
+  * Deployed live production application to: [`https://propease-ai-concierge.netlify.app`](https://propease-ai-concierge.netlify.app).
+  * Synchronized all URLs across `deployment.md`, `generate_docx.py`, `generate_pdf.py`, and `submission.zip`.
+  * Verified 10/10 automated tests passing, clean build, and 0 zip corruption errors.
 
 ---
 

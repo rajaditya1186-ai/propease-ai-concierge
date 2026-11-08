@@ -5,8 +5,8 @@
 ---
 
 ### Project Links
-* **GitHub Repository**: [https://github.com/rajaditya1186/propease-ai-concierge](https://github.com/rajaditya1186/propease-ai-concierge)
-* **Live Web Application**: [https://propease-ai-concierge.vercel.app](https://propease-ai-concierge.vercel.app)
+* **GitHub Repository**: [https://github.com/rajaditya1186-ai/propease-ai-concierge](https://github.com/rajaditya1186-ai/propease-ai-concierge)
+* **Live Web Application**: [https://propease-ai-concierge.netlify.app](https://propease-ai-concierge.netlify.app)
 * **Author / Candidate**: Aditya Raj (`rajaditya.1186@gmail.com`)
 
 ---
@@ -26,7 +26,7 @@ The project is built as a modern, high-performance Single Page Application (SPA)
 ### Step 1: Clone or Extract the Repository
 ```bash
 # Clone the repository from GitHub
-git clone https://github.com/rajaditya1186/propease-ai-concierge.git
+git clone https://github.com/rajaditya1186-ai/propease-ai-concierge.git
 
 # Enter the project directory
 cd propease-ai-concierge
@@ -172,7 +172,7 @@ To supply these variables locally, create a `.env.local` file in the project roo
 ```bash
 # .env.local (Template)
 VITE_APP_ENV=production
-VITE_BASE_URL=https://propease-ai-concierge.vercel.app
+VITE_BASE_URL=https://propease-ai-concierge.netlify.app
 VITE_AI_MODEL=
 VITE_GEMINI_API_KEY=
 VITE_WHATSAPP_API_TOKEN=
